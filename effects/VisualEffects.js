@@ -751,25 +751,21 @@
 
 	}
 
-	Move.prototype = {
+	Move.prototype.onLoop = function(p) {
 
-		onLoop: function(p) {
+		var moveX = Math.abs( this._x - this.object._x ) > this.speed,
+			moveY = Math.abs( this._y - this.object._y ) > this.speed;
+			
+		if ( moveX ) this.object.offsetX(this.direction.x * this.speed);
+		if ( moveY ) this.object.offsetY(this.direction.y * this.speed);
 
-			var moveX = Math.abs( this._x - this.object._x ) > this.speed,
-				moveY = Math.abs( this._y - this.object._y ) > this.speed;
-				
-			if ( moveX ) this.object.offsetX(this.direction.x * this.speed);
-			if ( moveY ) this.object.offsetY(this.direction.y * this.speed);
-
-			if ( ! moveX && ! moveY ) {
-				this.object.setLocation(this._x, this._y);
-				if ( this.onFinished ) this.onFinished.apply( this.object );
-				return false;
-			}
-
-			return true;
-
+		if ( ! moveX && ! moveY ) {
+			this.object.setLocation(this._x, this._y);
+			if ( this.onFinished ) this.onFinished.apply( this.object );
+			return false;
 		}
+
+		return true;
 
 	};
 
