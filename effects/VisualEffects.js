@@ -493,30 +493,26 @@
 
 	}
 
-	Tint.prototype = {
+	Tint.prototype.render = function( context, width, height ) {
 
-		render: function( context, width, height ) {
+		if ( this.isVisible() ) {
 
-			if ( this.isVisible() ) {
+			context.globalCompositeOperation = this.operation;
 
-				context.globalCompositeOperation = this.operation;
+			context.fillStyle = this.fillStyle;
 
-				context.fillStyle = this.fillStyle;
+			context.fillRect( 0, 0, width, height );
 
-				context.fillRect( 0, 0, width, height );
-
-			}
-
-		},
-
-		show: function() {
-			this.startTime = M.getTimeInMillis();
-		},
-
-		isVisible: function() {
-			return this.showAlways || M.getTimeInMillis() - this.startTime < this.duration;
 		}
 
+	};
+
+	Tint.prototype.show = function() {
+		this.startTime = M.getTimeInMillis();
+	};
+
+	Tint.prototype.isVisible = function() {
+		return this.showAlways || M.getTimeInMillis() - this.startTime < this.duration
 	};
 
 	/**
@@ -799,27 +795,23 @@
 
 	}
 
-	ScaleUp.prototype = {
+	ScaleUp.prototype.onLoop = function(p) {
 
-		onLoop: function(p) {
-
-			if ( this.object._scale.x < this._x ) {
-				this.object._scale.x += this.speedX;
-				this.object.onChangeEvent.needsRedraw = true;
-			}
-			if ( this.object._scale.y < this._y ) {
-				this.object._scale.y += this.speedY;	
-				this.object.onChangeEvent.needsRedraw = true;
-			}
-
-			if ( this.object._scale.x >= this._x && this.object._scale.y >= this._y ) {
-				if ( this.onFinished ) this.onFinished.apply( this.object );
-				return false;
-			}
-
-			return true;
-
+		if ( this.object._scale.x < this._x ) {
+			this.object._scale.x += this.speedX;
+			this.object.onChangeEvent.needsRedraw = true;
 		}
+		if ( this.object._scale.y < this._y ) {
+			this.object._scale.y += this.speedY;
+			this.object.onChangeEvent.needsRedraw = true;
+		}
+
+		if ( this.object._scale.x >= this._x && this.object._scale.y >= this._y ) {
+			if ( this.onFinished ) this.onFinished.apply( this.object );
+			return false;
+		}
+
+		return true;
 
 	};
 	
@@ -853,29 +845,25 @@
 
 	}
 
-	ScaleDown.prototype = {
+	ScaleDown.prototype.onLoop = function(p) {
 
-		onLoop: function(p) {
-
-			if ( this.object._scale.x > this._x ) {
-				this.object._scale.x -= this.speedX;
-				this.object.onChangeEvent.needsRedraw = true;
-			}
-			if ( this.object._scale.y > this._y ) {
-				this.object._scale.y -= this.speedY;
-				this.object.onChangeEvent.needsRedraw = true;
-			}
-
-			if ( this.object._scale.x <= this._x && this.object._scale.y <= this._y ) {
-				if ( this.onFinished ) this.onFinished.apply( this.object );
-				return false;
-			}
-
-			return true;
-
+		if ( this.object._scale.x > this._x ) {
+			this.object._scale.x -= this.speedX;
+			this.object.onChangeEvent.needsRedraw = true;
+		}
+		if ( this.object._scale.y > this._y ) {
+			this.object._scale.y -= this.speedY;
+			this.object.onChangeEvent.needsRedraw = true;
 		}
 
-	};
+		if ( this.object._scale.x <= this._x && this.object._scale.y <= this._y ) {
+			if ( this.onFinished ) this.onFinished.apply( this.object );
+			return false;
+		}
+
+		return true;
+
+};
 
 	/**
 	 * Creates a Twinkle object to be applied to the given renderers.Renderizable.
@@ -905,36 +893,32 @@
 		this.onFinished = onFinished;
 	}
 
-	Twinkle.prototype = {
+	Twinkle.prototype.onLoop = function(p) {
 
-		onLoop: function(p) {
+		if ( M.getTimeInMillis() - this.lastTime >= this.duration ) {
 
-			if ( M.getTimeInMillis() - this.lastTime >= this.duration ) {
+			if ( this.times-- ) {
 
-				if ( this.times-- ) {
-
-					if ( this.object._alpha == 1 ) {
-						this.object.setAlpha( 0 );
-					} else {
-						this.object.setAlpha( 1 );
-					}
-
+				if ( this.object._alpha == 1 ) {
+					this.object.setAlpha( 0 );
 				} else {
-
-					this.object.setAlpha( undefined );
-
-					if ( this.onFinished ) this.onFinished.apply( this.object );
-					return false;
-
+					this.object.setAlpha( 1 );
 				}
 
-				this.lastTime = M.getTimeInMillis();
+			} else {
+
+				this.object.setAlpha( undefined );
+
+				if ( this.onFinished ) this.onFinished.apply( this.object );
+				return false;
 
 			}
 
-			return true;
+			this.lastTime = M.getTimeInMillis();
 
 		}
+
+		return true;
 
 	};
 
@@ -968,20 +952,16 @@
 
 	}
 
-	Rotate.prototype = {
+	Rotate.prototype.onLoop = function(p) {
 
-		onLoop: function(p) {
-
-			if ( this.frames-- ) {
-				this.object.offsetRotation(this._rotation);
-			} else {
-				if ( this.onFinished ) this.onFinished.apply( this.object );
-				return false;
-			}
-
-			return true;
-
+		if ( this.frames-- ) {
+			this.object.offsetRotation(this._rotation);
+		} else {
+			if ( this.onFinished ) this.onFinished.apply( this.object );
+			return false;
 		}
+
+		return true;
 
 	};
 

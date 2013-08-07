@@ -26,8 +26,6 @@
 		 */
 		this.time = time;
 
-		this._initialized = false;
-
 	}
 	TimeCounter.prototype.initialize = function() {
 		this._lastTime = M.getTime();
