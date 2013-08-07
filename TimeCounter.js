@@ -29,19 +29,18 @@
 		this._initialized = false;
 
 	}
+	TimeCounter.prototype.initialize = function() {
+		this._lastTime = M.getTime();
+		this.elapsed = this.run;
+		return false;
+	};
 	/**
 	 * Returns true if time has elapsed since last update or false
 	 * @method elapsed
 	 */
-	TimeCounter.prototype.elapsed = function() {
+	TimeCounter.prototype.run = function() {
 
 		var currentTime = M.getTime();
-
-		if ( !this._initialized ) {
-			this._lastTime = currentTime;
-			this._initialized = true;
-			return false;
-		}
 
 		if ( currentTime - this.time >= this._lastTime ) {
 			this._lastTime = currentTime;
@@ -49,7 +48,9 @@
 		}
 
 		return false;
+
 	};
+	TimeCounter.prototype.elapsed = TimeCounter.prototype.initialize;
 
 	M.TimeCounter = TimeCounter;
 

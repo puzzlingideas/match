@@ -382,7 +382,7 @@
 		}
 
 		if ( object.onLoad ) object.onLoad();
-		
+
 		this.eventListener.needsSorting = true;
 		object.onChangeEvent = this.eventListener;
 

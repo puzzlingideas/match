@@ -210,11 +210,6 @@
 	Renderizable.prototype.getAlpha = function() {
 		return this._alpha;
 	};
-	/**
-	 * Loops through the animations of the object
-	 * @private
-	 * @method _loopThroughAnimations
-	 */
 	Renderizable.prototype._loopThroughAnimations = function () {
 		var i = 0,
 			l = this._onLoopAnimations.length,
@@ -229,6 +224,13 @@
 				this._chainAnimations.splice(0, 1);
 			}
 		}
+	};
+	/**
+	 * Clears the animation loop
+	 * @method clearAnimations
+	 */
+	Renderizable.prototype.clearAnimations = function () {
+		this._onLoopAnimations = new Array();
 	};
 	/**
 	 * Adds a fade in animation to this object
@@ -844,7 +846,7 @@
 		if ( this._alpha != null && this._alpha >= 0 && this._alpha <= 1 ) {
 			context.globalAlpha = this._alpha;
 			context.alphaChanged = false;
-		} else if (context.alphaChanged) {f
+		} else if (context.alphaChanged) {
 			context.resetAlpha();
 		}
 	};
