@@ -168,25 +168,6 @@ var M = window.M || {};
 	}
 
 	/**
-	 * This is the game loop function that is called by the thread created
-	 * by Match. It loops through the Match onLoopList calling the onLoop
-	 * method of each of the contained objects.
-	 *
-	 *
-	 * @private
-	 * @method gameLoop
-	 *
-	 */
-	/*
-	 * NOTE: cancelRequestAnimationFrame has not been implemented in every
-	 * browser so we just check Match state to know whether to loop or not.
-	 */
-	function gameLoop() {
-		window.requestAnimFrame( gameLoop );
-		window.Match.gameLoop();
-	}
-
-	/**
 	 * Match Game Engine.
 	 * When DOMContentLoaded event is executed the game loop starts. 
 	 * If window has a function called main, that function gets executed once after Match has finished loading
@@ -260,9 +241,10 @@ var M = window.M || {};
 			debug: false,
 			time: 0
 		};
-				
+
 		this.browser = new Browser();
 		this.device = new Device();
+
 		this.setDoubleBuffer(false);
 
 		var self = this;
@@ -368,17 +350,6 @@ var M = window.M || {};
 
 		for ( ; i < l; i++ ) {
 			f.drawImage( list[i].onLoop(p), 0, 0 );
-			//TODO: REVIEW
-			// if ( this.frontBuffers ) {
-				// var w = frontCanvas.width,
-					// h = frontCanvas.height,
-					// c;
-				// for ( var j = 0; j < this.frontBuffers.length; j++ ) {
-					// c = this.frontBuffers[j];
-					// c.clearRect(0, 0, w, h);
-					// c.drawImage(f.canvas, 0, 0);
-				// }
-			// }
 		}
 
 	};
@@ -437,7 +408,6 @@ var M = window.M || {};
 
 		this.frontBuffer.drawImage( backBuffer.canvas, 0, 0 );
 
-		this.pepe = true;
 	};
 	/**
 	 * Calls the onLoop method on all elements in nodes
@@ -528,9 +498,6 @@ var M = window.M || {};
 			this.frontBuffer.font = "18px sans-serif";
 			this.frontBuffer.fillStyle = "yellow";
 			this.frontBuffer.fillText( this.getFps() + "fps", 20, 20 );
-			// for ( var i = 0; i < this._gameLayers.length; i++ ) {
-				// this.frontBuffer.fillText( ("layer" + i) + " " + this._gameLayers[i]._loopTime + "ms", 20, 40 + 20 * i );
-			// }
 		}
 
 		/*
@@ -1420,23 +1387,39 @@ var M = window.M || {};
 		}
 	};
 
-	/*
-	 * Paul Irish's method for requesting animation frame
-	 */
-	window.requestAnimFrame = (function() {
+	if ( !window.requestAnimationFrame ) {
 
-	  return  window.requestAnimationFrame       || 
-			  window.webkitRequestAnimationFrame || 
-			  window.mozRequestAnimationFrame    || 
-			  window.oRequestAnimationFrame      || 
-			  window.msRequestAnimationFrame	 ||
-			  function( callback ){
-				window.setTimeout(callback, 1000 / 60);
-              };
+		window.requestAnimationFrame = 
+			window.webkitRequestAnimationFrame	|| 
+			window.mozRequestAnimationFrame		|| 
+			window.oRequestAnimationFrame		|| 
+			window.msRequestAnimationFrame		||
+			function( callback ) { 
+				setTimeout(callback, 1000 / 60);
+			};
 
-	})();
+	}
 
 	/* Set up namespace and global Match definition. Match is static. */
 	namespace.M = namespace.Match = new Match();
+
+	/**
+	 * This is the game loop function that is called by the thread created
+	 * by Match. It loops through the Match onLoopList calling the onLoop
+	 * method of each of the contained objects.
+	 *
+	 *
+	 * @private
+	 * @method gameLoop
+	 *
+	 */
+	/*
+	 * NOTE: cancelRequestAnimationFrame has not been implemented in every
+	 * browser so we just check Match state to know whether to loop or not.
+	 */
+	function gameLoop() {
+		requestAnimationFrame( gameLoop );
+		M.gameLoop();
+	}
 
 })(window);
