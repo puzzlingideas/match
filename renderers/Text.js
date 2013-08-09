@@ -223,14 +223,14 @@
 	 */
 	Text.prototype.setHorizontalAlign = function(value) {
 		this._textAlign = value;
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * @deprecated
 	 */
 	Text.prototype.setVerticalAlign = function(value) {
 		this._textBaseline = value;
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Gets the width of this object
@@ -268,7 +268,7 @@
 	 */
 	Text.prototype.setFamily = function(value) {
 		this._family = value;
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the font size
@@ -280,7 +280,7 @@
 	 */
 	Text.prototype.setSize = function(value) {
 		this._size = parseInt(value) + "px ";
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the font weight
@@ -298,7 +298,7 @@
 	 */
 	Text.prototype.setWeight = function(value) {
 		this._weight = value + " ";
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the font variant
@@ -312,7 +312,7 @@
 	 */
 	Text.prototype.setVariant = function(value) {
 		this._variant = value + " ";
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the font style
@@ -328,7 +328,7 @@
 	 */
 	Text.prototype.setStyle = function(value) {
 		this._style = value + " ";
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the font fillStyle
@@ -344,7 +344,7 @@
 	 */
 	Text.prototype.setFillStyle = function(value) {
 		this._fillStyle = value;
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Applies the css style by the given selector to the text object.
@@ -427,7 +427,7 @@
 	 */
 	Text.prototype.setStrokeStyle = function(value) {
 		this._strokeStyle = value;
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the line width used to stroke the text
@@ -460,7 +460,7 @@
 			this.multiLine = value.split("\n");
 		}
 		this._text = value;
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Gets the font family
@@ -506,7 +506,7 @@
 		this._shadow = {
 			x: x, y: y, color: color || "black", blur: blur || 1
 		}
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Gets the text shadow

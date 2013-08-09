@@ -1274,6 +1274,16 @@ var M = window.M || {};
 		this.prevLayers = M.removeScene();
 		this.pushScene(scene.getLayers());
 	};
+	Match.prototype.getObjectName = function(object) {
+		if (!object || !object.constructor) {
+			return object;
+		}
+		var name = object.constructor.name;
+		if ( !name ) {
+			name = object.constructor.toString().match(/function ([a-zA-Z_$][a-zA-Z_$0-9]*)/)[1];
+		}
+		return name;
+	};
 
 	/* Save console usage for debugging purposes */
 	if ( window.console ) {

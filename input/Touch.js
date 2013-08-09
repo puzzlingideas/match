@@ -28,6 +28,11 @@
 
 	function Touch() {
 
+		/*
+		 * IE handles touch with MSPointerDown, MSPointerUp and MSPointerMove. We must update this interfac
+		 * to support IE or user will have to default to mouse
+		 */
+
 		document.addEventListener("touchstart", touchStartHelper, false);
 		document.addEventListener("touchend", touchEndHelper, false);
 		document.addEventListener("touchmove", touchMoveHelper, false);

@@ -122,7 +122,7 @@
 
 		this.loop = loop;
 
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 
 	};
 	/**
@@ -179,7 +179,7 @@
 
 				this.currentFrameStartInMillis = timeInMillis;
 
-				this.onChangeEvent.needsRedraw = true;
+				this.notifyChange();
 
 			}
 
@@ -278,7 +278,7 @@
 		this.oH = height;
 		this.oHW = width / 2;
 		this.oHH = height / 2;
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
     /**
 	 * Sets the index of the frame to render
@@ -379,7 +379,7 @@
 		} else {
 			this._x = value + this.currentFrame.halfWidth;
 		}
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the rightmost coordinates of the Object
@@ -393,7 +393,7 @@
 		} else {
 			this._x = value - this.currentFrame.halfWidth;
 		}
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the topmost coordinates of the Object
@@ -407,7 +407,7 @@
 		} else {
 			this._y = value + this.currentFrame.halfHeight;
 		}
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the bottommost coordinates of the Object
@@ -421,7 +421,7 @@
 		} else {
 			this._y = value - this.currentFrame.halfHeight;
 		}
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	
 	M.extend( Sprite, Renderizable );

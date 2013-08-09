@@ -75,4 +75,4 @@
 
 	namespace.CollisionMap = CollisionMap;
 
-})(Match.collisions);
+})(window.Match.collisions || ( window.Match.collisions = {} ) );

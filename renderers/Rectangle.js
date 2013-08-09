@@ -110,7 +110,7 @@
 	 */
 	Rectangle.prototype.setFillStyle = function(value) {
 		this._fillStyle = value;
-		this._changed = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the style used to stroke the rectangle
@@ -124,7 +124,7 @@
 	 */
 	Rectangle.prototype.setStrokeStyle = function(value) {
 		this._strokeStyle = value;
-		this._changed = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the line width used to stroke the rectangle
@@ -136,7 +136,7 @@
 	 */
 	Rectangle.prototype.setStrokeWidth = function(value) {
 		this._lineWidth = value;
-		this._changed = true;
+		this.notifyChange();
 	};
 	/**
 	 * Sets the shadow style for this rectangle
@@ -151,7 +151,7 @@
 		this._shadow = {
 			x: x, y: y, color: color || "black", blur: blur || 1
 		}
-		this._changed = true;
+		this.notifyChange();
 	};
 	/**
 	 * Gets the fill style
@@ -198,7 +198,6 @@
 
 		this._applyOperation(context);
 		this._applyAlpha(context);
-
 
 		if ( this._rotation || this._scale ) {
 			context.save();

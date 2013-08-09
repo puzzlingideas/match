@@ -34,16 +34,13 @@
 		 */
 		this.onRenderList = [];
 		/**
-		 * Contains directions on whether to redraw all visible objects to the buffer or sort the objects
-		 * @private
-		 * @property eventListener
-		 * @type Object
+		 * Determines whether this layer needs to be redrawn or not
 		 */
-		this.eventListener = {
-			needsRedraw: true,
-			needsSorting: false
-		}
-
+		this.needsRedraw = true;
+		/**
+		 * Determines whether the objects in this layer needs to be sorted again
+		 */
+		this.needsSorting = false;
 		/**
 		 * object rotation
 		 * @property rotation
@@ -96,6 +93,8 @@
 		 * @type Array
 		 */
 		this._onLoopAnimations = [];
+
+		this.result = this.buffer.canvas;
 
 		if ( M.frontBuffer ) {
 			this.setSize(M.frontBuffer.canvas.width, M.frontBuffer.canvas.height);
@@ -264,33 +263,33 @@
 	 */
 	GameLayer.prototype.onLoop = function(p) {
 
-		var cameraX0 = p.camera.x * this.parrallaxFactor.x,
-			cameraY0 = p.camera.y * this.parrallaxFactor.y,
-			cameraX1 = cameraX0 + p.camera.viewportWidth,
-			cameraY1 = cameraY0 + p.camera.viewportHeight,
-			buffer = this.buffer,
-			canvas = buffer.canvas,
-			time;
-
 		// if ( p.debug ) {
 			// time = new Date().getTime()
 		// }
 
-		if ( this.eventListener.needsRedraw ) {
+		if ( this.needsRedraw ) {
+
+			var cameraX0 = p.camera.x * this.parrallaxFactor.x,
+				cameraY0 = p.camera.y * this.parrallaxFactor.y,
+				cameraX1 = cameraX0 + p.camera.viewportWidth,
+				cameraY1 = cameraY0 + p.camera.viewportHeight,
+				buffer = this.buffer,
+				canvas = buffer.canvas,
+				time;
 
 			this.clear(buffer, canvas);
 
 			this.renderGameObjects(this.onRenderList, buffer, canvas, cameraX0, cameraY0, cameraX1, cameraY1);
 
-			this.eventListener.needsRedraw = false;
+			this.needsRedraw = false;
 
 			this.result = this.postProcessing.run(buffer);
 
 		}
 
-		if ( this.eventListener.needsSorting ) {
+		if ( this.needsSorting ) {
 			this.sort();
-			this.eventListener.needsSorting = false;
+			this.needsSorting = false;
 		}
 
 		this._loopThroughAnimations();
@@ -331,6 +330,12 @@
 	GameLayer.prototype.addToGame = function() {
 		M.pushGameLayer(this);
 	};
+	GameLayer.prototype.renderizableChanged = function() {
+		this.needsRedraw = true;
+	};
+	GameLayer.prototype.zIndexChanged = function() {
+		this.needsSorting = true;
+	};
 	/**
 	 * Pushes an object into the onRenderList
 	 * @method push
@@ -342,49 +347,61 @@
 	 */
 	GameLayer.prototype.push = function(object, key, zIndex) {
 
-		if ( ! object ) throw new Error("Cannot add null object to rendering loop");
-
-		if ( object instanceof Function ) {
-			
-			object = {
-				onRender: object,
-				isVisible: function() {
-					this.onChangeEvent.needsRedraw = true;
-					return true;
-				},
-				setZIndex: function(value) {
-					this._zIndex = value;
-				}
-			}
-
+		if ( ! object ) {
+			throw new Error("Cannot push null Object to game layer");
 		}
 
 		if ( !object.onRender ) {
-			console.warn("Cannot add object with no onRender method ", object.constructor.name, "adding to Match list of Game Objects");
-			M.pushGameObject(object);
-			return;
+			throw new Error(M.getObjectName(object) + " must implement onRender method");
 		}
 
-		if ( key ) object.key = key;
+		if ( !object.isVisible ) {
+			//throw new Error(M.getObjectName(object) + " does not implement isVisible method. A default method will be appended. Rendering objects outside of game area is inefficient and innecessary, please implement isVisible for better performance");
+			console.warn(M.getObjectName(object) + " does not implement isVisible method. A default method will be appended. Rendering objects outside of game area is inefficient and innecessary, please implement isVisible for better performance");
+			object.isVisible = function() { return true; };
+		}
 
-		if ( object._zIndex == undefined ) {
+		if ( !object.setZIndex ) {
+			// throw new Error(M.getObjectName(object) + " does not implement setZIndex method");
+			console.warn(M.getObjectName(object) + " does not implement setZIndex method");
+		}
 
-			if ( zIndex > -1 ) {
-				try {
-					object.setZIndex(zIndex || 0);
-				} catch (e) {
-					object._zIndex = zIndex || 0;
+		if ( !object.getZIndex ) {
+			//throw new Error(M.getObjectName(object) + " does not implement getZIndex method");
+			console.warn(M.getObjectName(object) + " does not implement getZIndex method");
+		}
+
+		if ( !object._zIndex ) {
+			object._zIndex = this.onRenderList.length;
+		}
+
+		if ( !object.notifyChange ) {
+			// throw new Error(M.getObjectName(object) + " does not implement notifyChange method. This method must inform the onwerLayer of any change in a value that would require a redraw action. ie: function() { this.ownerLayer.renderizableChanged(); } ownerLayer is added when the object is pushed into a layer by default");
+			console.warn(M.getObjectName(object) + " does not implement notifyChange method. This method must inform the onwerLayer of any change in a value that would require a redraw action. ie: function() { this.ownerLayer.renderizableChanged(); } ownerLayer is added when the object is pushed into a layer by default");
+			object.notifyChange = function () {
+				if ( this.ownerLayer ) {
+					this.ownerLayer.renderizableChanged();
 				}
 			}
-
-		} else {
-			object.setZIndex(object.getZIndex());
 		}
 
-		if ( object.onLoad ) object.onLoad();
+		if ( !object.notifyZIndexChange ) {
+			// throw new Error(M.getObjectName(object) + " does not implement notifyZIndexChange method. This method must inform the onwerLayer of any change in the zIndex so that the layer reorders its children. ie: function() { this.ownerLayer.zIndexChanged(); } ownerLayer is added when the object is pushed into a layer by default");
+			console.warn(M.getObjectName(object) + " does not implement notifyZIndexChange method. This method must inform the onwerLayer of any change in the zIndex so that the layer reorders its children. ie: function() { this.ownerLayer.zIndexChanged(); } ownerLayer is added when the object is pushed into a layer by default");
+			object.notifyZIndexChange = function () {
+				if ( this.ownerLayer ) {
+					this.ownerLayer.zIndexChange();
+				}
+			}
+		}
 
-		this.eventListener.needsSorting = true;
-		object.onChangeEvent = this.eventListener;
+		object.ownerLayer = this;
+
+		if ( object.onLoad ) {
+			object.onLoad();
+		}
+
+		this.needsSorting = true;
 
 		this.onRenderList.push(object);
 
@@ -398,8 +415,8 @@
 			cameraX1 = cameraX0 + camera.viewportWidth,
 			cameraY1 = cameraY0 + camera.viewportHeight;
 
-		if ( object.isVisible(cameraX0, cameraY0, cameraX1, cameraY1) ) {
-			this.eventListener.needsRedraw = true;
+		if ( !this.needsRedraw ) {
+			this.needsRedraw = object.isVisible(cameraX0, cameraY0, cameraX1, cameraY1);
 		}
 
 	};
@@ -550,7 +567,9 @@
 
 		}
 
-		this._needsRedraw = true;
+		object.ownerLayer = null;
+
+		this.needsRedraw = true;
 
 	};
 	/**

@@ -115,15 +115,7 @@
 		 * @type float
 		 */
 		this._alpha = null;
-		/**
-		 * object read by layers to determine whether the layer should be redrawn or it's objects should be sorted based on zIndex
-		 * @private
-		 * @property onChangeEvent
-		 * @type Object
-		 * @example
-				this.onChangeEvent = { needsRedraw: true, needsSorting: true };
-		 */
-		this.onChangeEvent = {};
+
         this.set(properties);
 		/**
 		 * Child objects of this node
@@ -133,6 +125,20 @@
 				this.children.healthBar = new M.renderers.Rectangle();
 		 */
 	}
+	/**
+	 * Notifies owner layer about a change in this object
+	 * @method notifyChange
+	 */
+	Renderizable.prototype.notifyChange = function() {
+		this.ownerLayer&&this.ownerLayer.renderizableChanged();
+	};
+	/**
+	 * Notifies owner layer about a change in the zIndex this object
+	 * @method notifyZIndexChange
+	 */
+	Renderizable.prototype.notifyZIndexChange = function() {
+		this.ownerLayer&&this.ownerLayer.zIndexChanged();
+	};
 	/**
 	 * Removes the child by the given key
 	 * @method removeChild
@@ -151,7 +157,7 @@
 		if ( !this.children ) {
 			this.children = new Object();
 		}
-		object.onChangeEvent = this.onChangeEvent;
+		object.ownerLayer = this.ownerLayer;
 		this.children[key] = object;
 	};
 	/**
@@ -197,7 +203,7 @@
 	Renderizable.prototype.setAlpha = function(value) {
 		if ( value >= 0 && value <= 1 ) {
 			this._alpha = value;
-			this.onChangeEvent.needsRedraw = true;
+			this.notifyChange();
 		} else {
 			this._alpha = null;
 		}
@@ -477,8 +483,8 @@
 	 */
     Renderizable.prototype.setZIndex = function (value) {
         this._zIndex = value;
-        this.onChangeEvent.needsRedraw = true;
-        this.onChangeEvent.needsSorting = true;
+        this.notifyChange();
+        this.notifyZIndexChange();
     };
 	/**
 	 * Gets the zIndex of this object
@@ -495,7 +501,7 @@
 	 */
     Renderizable.prototype.setVisible = function (value) {
         this._visible = value;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Sets the width of this object
@@ -505,7 +511,7 @@
     Renderizable.prototype.setWidth = function (value) {
         this._width = value;
         this._halfWidth = value / 2;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Sets the height of this object
@@ -515,7 +521,7 @@
     Renderizable.prototype.setHeight = function (value) {
         this._height = value;
         this._halfHeight = value / 2;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Gets the width of this object
@@ -572,7 +578,7 @@
             x: x,
             y: y
         };
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Sets the scale width factor
@@ -585,7 +591,7 @@
 			this._scale.y = 1;
 		}
         this._scale.x = x;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Sets the scale height factor
@@ -598,7 +604,7 @@
 			this._scale.x = 1;
 		}
 		this._scale.y = y;
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
 	};
 	/**
 	 * Inverts the object in the x axis
@@ -619,7 +625,7 @@
 			this._scale.y = 1;
 		}
         this._scale.x *= -1;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Inverts the object in the y axis
@@ -632,7 +638,7 @@
 			this._scale.y = 1;
 		}
         this._scale.y = -1;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Returns x coordinate representing the leftmost part of the Object
@@ -730,7 +736,7 @@
         } else {
             this._x = value + this._halfWidth;
         }
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Sets the rightmost coordinates of the Object
@@ -744,7 +750,7 @@
         } else {
             this._x = value - this._halfWidth;
         }
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Sets the topmost coordinates of the Object
@@ -758,7 +764,7 @@
         } else {
             this._y = value + this._halfHeight;
         }
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Sets the bottommost coordinates of the Object
@@ -772,7 +778,7 @@
         } else {
             this._y = value - this._halfHeight;
         }
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Returns an object containing the x and y coordinates of the object
@@ -800,7 +806,7 @@
 		this.prevY = this._y;
 		this._x = x;
 		this._y = y;
-		this.onChangeEvent.needsRedraw = true;
+		this.notifyChange();
     };
 	/**
 	 * Returns true if this object moved in the x axis
@@ -859,10 +865,10 @@
 	 */
 	Renderizable.prototype._applyShadow = function(context) {
 		if ( this._shadow ) {
-			context.shadowOffsetX = x;
-			context.shadowOffsetY = y;
-			context.shadowColor = color;
-			context.shadowBlur = blur;
+			context.shadowOffsetX = this._shadow.x;
+			context.shadowOffsetY = this._shadow.y;
+			context.shadowColor = this._shadow.color;
+			context.shadowBlur = this._shadow.blur;
 			context.shadowChanged = false;
 		} else if (context.shadowChanged) {
 			context.resetShadow();
@@ -912,7 +918,7 @@
 	 */
     Renderizable.prototype.offsetAlpha = function(offset) {
         this._alpha += offset;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
     /**
 	 * Offsets the rotation
@@ -922,7 +928,7 @@
 	 */
     Renderizable.prototype.offsetRotation = function(offset) {
         this._rotation += offset;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Returns whether this object is visible and is inside the given viewport
@@ -971,7 +977,7 @@
 	 */
     Renderizable.prototype.setRotation = function (rotation) {
         this._rotation = rotation;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Gets the rotation angle of this object
@@ -991,7 +997,7 @@
     Renderizable.prototype.setX = function (x) {
 		this.prevX = this._x;
         this._x = x;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Sets the y coordinate of this object
@@ -1002,7 +1008,7 @@
     Renderizable.prototype.setY = function (y) {
 		this.prevY = this._y;
         this._y = y;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Adds the given x and y coordinates to those of the object
@@ -1016,7 +1022,7 @@
 		this.prevY = this._y;
         this._x += x;
         this._y += y;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Adds the given x coordinate to that of the object
@@ -1027,7 +1033,7 @@
     Renderizable.prototype.offsetX = function (x) {
 		this.prevX = this._x;
         this._x += x;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Adds the given y coordinates to that of the object
@@ -1038,7 +1044,7 @@
     Renderizable.prototype.offsetY = function (y) {
 		this.prevY = this._y;
         this._y += y;
-        this.onChangeEvent.needsRedraw = true;
+        this.notifyChange();
     };
 	/**
 	 * Centers the object at the given vector2d object

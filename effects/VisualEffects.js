@@ -156,7 +156,6 @@
 		this.setPath(origin, destination);
 		this.setWidth(width);
 		this.setHeight(height);
-		this.onChangeEvent = new Object();
 	}
 
 	Particle.prototype.setWidth = function(width) {
@@ -184,7 +183,7 @@
 		this._x += this.speed * this.direction.x;
 		this._y += this.speed * this.direction.y;
 
-		this.onChangeEvent.needsRedraw = true;
+		// this.notifyChange();
 
 	};
 
@@ -206,8 +205,8 @@
 
 	Particle.prototype.setZIndex = function (value) {
         this._zIndex = value;
-        this.onChangeEvent.needsRedraw = true;
-        this.onChangeEvent.needsSorting = true;
+        // this.notifyChange();
+        // this.notifyZIndexChange();
     };
 
 	Particle.prototype.isVisible = function(cameraX0, cameraY0, cameraX1, cameraY1) {
@@ -307,7 +306,6 @@
 		this.minSpeed = minSpeed || 0.01;
 		this.maxSpeed = maxSpeed || 0.1;
 		this.vanishRate = vanishRate;
-		this.onChangeEvent = new Object();
 	}
 
 	RadialParticleEmitter.prototype.onLoop = function() {
@@ -324,7 +322,7 @@
 		if ( notVisible == l ) {
 			this.children = null;
 		} else {
-			this.onChangeEvent.needsRedraw = true;
+			this.notifyChange();
 		}
 	};
 
@@ -337,8 +335,8 @@
 
 	RadialParticleEmitter.prototype.setZIndex = function (value) {
 		this._zIndex = value;
-		this.onChangeEvent.needsRedraw = true;
-		this.onChangeEvent.needsSorting = true;
+		this.notifyChange();
+		this.notifyZIndexChange();
 	};
 	/**
 	 * Creates particles that will move from the center to another part of a circle
@@ -799,11 +797,11 @@
 
 		if ( this.object._scale.x < this._x ) {
 			this.object._scale.x += this.speedX;
-			this.object.onChangeEvent.needsRedraw = true;
+			this.notifyChange();
 		}
 		if ( this.object._scale.y < this._y ) {
 			this.object._scale.y += this.speedY;
-			this.object.onChangeEvent.needsRedraw = true;
+			this.notifyChange();
 		}
 
 		if ( this.object._scale.x >= this._x && this.object._scale.y >= this._y ) {
@@ -849,11 +847,11 @@
 
 		if ( this.object._scale.x > this._x ) {
 			this.object._scale.x -= this.speedX;
-			this.object.onChangeEvent.needsRedraw = true;
+			this.notifyChange();
 		}
 		if ( this.object._scale.y > this._y ) {
 			this.object._scale.y -= this.speedY;
-			this.object.onChangeEvent.needsRedraw = true;
+			this.notifyChange();
 		}
 
 		if ( this.object._scale.x <= this._x && this.object._scale.y <= this._y ) {
