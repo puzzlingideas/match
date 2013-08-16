@@ -1,0 +1,22 @@
+#toolsUI {
+	position: absolute;
+	background: #252525;
+	font: 18px Calibri;
+	padding: 10px;
+	font-weight: bold;
+	display: inline-block;
+}
+#toolsUI li {
+	cursor: pointer;
+	padding: 30px 10px;
+	margin: 5px;
+	background: #FF991D;
+	color: #FFF;
+	width: 80px;
+	height: 30px;
+	text-align: center;
+	display: inline-block;
+}
+#toolsUI li.enabled {
+	background: #e66b1b;
+}

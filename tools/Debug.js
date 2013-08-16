@@ -10,6 +10,7 @@
 	 * @constructor
 	 */
 	function Debug() {
+		this._enabled = false;
 	}
 
 	/**
@@ -32,6 +33,8 @@
 
 		}
 
+		this._enabled = value;
+
 	};
 	/**
 	 * Enables debugging
@@ -46,6 +49,13 @@
 	 */
 	Debug.prototype.disable = function() {
 		this.setEnabled(false);
+	};
+	/**
+	 * Returns whether debugging is enabled or not
+	 * @method enable
+	 */
+	Debug.prototype.getEnabled = function() {
+		return this._enabled;
 	};
 	/**
 	 * Match game loop that prints debug info
@@ -67,6 +77,8 @@
 
 	};
 
-	M.debug = new Debug();
+	M.tools = M.tools || new Object();
+
+	M.tools.debug = new Debug();
 
 })(Match);

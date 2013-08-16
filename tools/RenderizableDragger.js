@@ -3,6 +3,9 @@
  */
 (function(M) {
 
+	function dummyFunction() {
+	}
+
 	/**
 	 * Adds debug capabilities  to Match
 	 * @class Debug
@@ -11,6 +14,8 @@
 	 */
 	function RenderizableDragger() {
 		this._updateGameObjectsBackUp = M.updateGameObjects;
+		this._enabled = false;
+		this._updateGameObjectsEnabled = false;
 	}
 
 	/**
@@ -32,6 +37,8 @@
 
 		}
 
+		this._enabled = value;
+
 	};
 	/**
 	 * Set Match stop updating objects
@@ -49,6 +56,8 @@
 			M.updateGameObjects = dummyFunction;
 
 		}
+
+		this._updateGameObjectsEnabled = value;
 
 	};
 	/**
@@ -96,6 +105,20 @@
 		this.setEnabled(true);
 	};
 	/**
+	 * Returns whether dragging is enabled or not
+	 * @method enable
+	 */
+	RenderizableDragger.prototype.getEnabled = function() {
+		return this._enabled;
+	};
+	/**
+	 * Returns whether Match is updating game objects or not
+	 * @method enable
+	 */
+	RenderizableDragger.prototype.getUpdateGameObjectsEnabled = function() {
+		return this._updateGameObjectsEnabled;
+	};
+	/**
 	 * Disables renderizable dragging
 	 * @method disable
 	 */
@@ -103,9 +126,8 @@
 		this.setEnabled(false);
 	};
 
-	M.renderizableDragger = new RenderizableDragger();
+	M.tools = M.tools || new Object();
 
-	function dummyFunction() {
-	}
+	M.tools.renderizableDragger = new RenderizableDragger();
 
 })(Match);
