@@ -9,7 +9,8 @@
 	 * @static
 	 * @constructor
 	 */
-	function PositionEditor() {
+	function RenderizableDragger() {
+		this._updateGameObjectsBackUp = M.updateGameObjects;
 	}
 
 	/**
@@ -17,7 +18,7 @@
 	 * @method setEnabled
 	 * @param {Boolean} value true to debug false to not debug
 	 */
-	PositionEditor.prototype.setEnabled = function(value) {
+	RenderizableDragger.prototype.setEnabled = function(value) {
 
 		if ( value ) {
 
@@ -33,30 +34,48 @@
 
 	};
 	/**
+	 * Set Match to allow dragging of objects
+	 * @method setEnabled
+	 * @param {Boolean} value true to debug false to not debug
+	 */
+	RenderizableDragger.prototype.setUpdateGameObjectsEnabled = function(value) {
+
+		if ( value ) {
+
+			M.updateGameObjects = this._updateGameObjectsBackUp;
+
+		} else {
+
+			M.updateGameObjects = dummyFunction;
+
+		}
+
+	};
+	/**
 	 * Drags renderizable on mouse drag
 	 * @method _dragRenderizable
 	 * @private
 	 */
-	PositionEditor.prototype._dragRenderizable = function() {
+	RenderizableDragger.prototype._dragRenderizable = function() {
 
 		var mouse = M.mouse;
 
 		if ( !mouse.down() ) {
+			this.selected = null;
 			return;
 		}
 
 		var gameObjects = M._gameObjects,
 			i = gameObjects.length,
-			selected = null,
 			renderizable;
 
-		while ( i-- && !selected ) {
+		while ( i-- && !this.selected ) {
 
 			renderizable = gameObjects[i];
 
 			try {
 				if ( renderizable != this && mouse.isOverPolygon(renderizable) && mouse.isOverPixelPerfect(renderizable) ) {
-					selected = renderizable;
+					this.selected = renderizable;
 				}
 			} catch (e) {
 				//Do nothing
@@ -64,12 +83,15 @@
 
 		}
 
-		if ( selected ) {
-			selected.setLocation(mouse.x, mouse.y);
+		if ( this.selected ) {
+			this.selected.setLocation(mouse.x, mouse.y);
 		}
 
 	};
 
-	M.dragRenderizables = new PositionEditor();
+	M.renderizableDragger = new RenderizableDragger();
+
+	function dummyFunction() {
+	}
 
 })(Match);
