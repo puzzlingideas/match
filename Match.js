@@ -271,15 +271,6 @@ var M = window.M || {};
 
 	};
 	/**
-	 * Set Match debug mode on or off. If this value is set to true then FPS and layer rendering time will be displayed
-	 * in the top-left corner of the canvas
-	 * @method setDebug
-	 * @param {Boolean} value true to debug false to not debug
-	 */
-	Match.prototype.setDebug = function(value) {
-		this.onLoopProperties.debug = value;
-	};
-	/**
 	 * Set Keyboard object. This is called by default by the keyboard implementation of this library but it could be changed
 	 * @method setKeyboard
 	 * @param {input.Keyboard} keyboard the keyboard to bind
@@ -475,7 +466,9 @@ var M = window.M || {};
 
 		if ( !this._isPlaying ) return;
 
-		if ( this.onBeforeLoop ) this.onBeforeLoop();
+		if ( this.onBeforeLoop ) {
+			this.onBeforeLoop.raise();
+		}
 
 		var p = this.onLoopProperties;
 
@@ -494,18 +487,14 @@ var M = window.M || {};
 		 */
 		this.render(this._gameLayers, this.frontBuffer.canvas, p);
 
-		if ( p.debug ) {
-			this.frontBuffer.font = "18px sans-serif";
-			this.frontBuffer.fillStyle = "yellow";
-			this.frontBuffer.fillText( this.getFps() + "fps", 20, 20 );
-		}
-
 		/*
 		 * Update FPS count
 		 */
 		this.FpsCounter.count();
 
-		if ( this.onAfterLoop ) this.onAfterLoop();
+		if ( this.onAfterLoop ) {
+			this.onAfterLoop.raise();
+		}
 
 	};
 	/**
