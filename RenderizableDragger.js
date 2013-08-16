@@ -16,7 +16,7 @@
 	/**
 	 * Set Match to allow dragging of objects
 	 * @method setEnabled
-	 * @param {Boolean} value true to debug false to not debug
+	 * @param {Boolean} value true to enable false to disable
 	 */
 	RenderizableDragger.prototype.setEnabled = function(value) {
 
@@ -34,9 +34,9 @@
 
 	};
 	/**
-	 * Set Match to allow dragging of objects
-	 * @method setEnabled
-	 * @param {Boolean} value true to debug false to not debug
+	 * Set Match stop updating objects
+	 * @method setUpdateGameObjectsEnabled
+	 * @param {Boolean} value true to enable false to disable
 	 */
 	RenderizableDragger.prototype.setUpdateGameObjectsEnabled = function(value) {
 
@@ -87,6 +87,20 @@
 			this.selected.setLocation(mouse.x, mouse.y);
 		}
 
+	};
+	/**
+	 * Enables renderizable dragging
+	 * @method enable
+	 */
+	RenderizableDragger.prototype.enable = function() {
+		this.setEnabled(true);
+	};
+	/**
+	 * Disables renderizable dragging
+	 * @method disable
+	 */
+	RenderizableDragger.prototype.disable = function() {
+		this.setEnabled(false);
 	};
 
 	M.renderizableDragger = new RenderizableDragger();

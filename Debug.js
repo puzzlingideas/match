@@ -34,6 +34,20 @@
 
 	};
 	/**
+	 * Enables debugging
+	 * @method enable
+	 */
+	Debug.prototype.enable = function() {
+		this.setEnabled(true);
+	};
+	/**
+	 * Disables debugging
+	 * @method disable
+	 */
+	Debug.prototype.disable = function() {
+		this.setEnabled(false);
+	};
+	/**
 	 * Match game loop that prints debug info
 	 * @method _debugGameLoop
 	 * @private
