@@ -33,6 +33,16 @@
 		return false;
 	};
 	/**
+	 * Sets the time interval
+	 * @method elapsed
+	 * @param {integer} value the inteval
+	 */
+	TimeCounter.prototype.setInterval = function(value) {
+		this.elapsed = this.initialize;
+		this.time = value;
+		return false;
+	};
+	/**
 	 * Returns true if time has elapsed since last update or false
 	 * @method elapsed
 	 */

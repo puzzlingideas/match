@@ -851,7 +851,7 @@
 	Renderizable.prototype._applyAlpha = function(context) {
 		if ( this._alpha != null && this._alpha >= 0 && this._alpha <= 1 ) {
 			context.globalAlpha = this._alpha;
-			context.alphaChanged = false;
+			context.alphaChanged = true;
 		} else if (context.alphaChanged) {
 			context.resetAlpha();
 		}

@@ -268,6 +268,11 @@
 			context.restore();
 		} else {
 			context.drawImage( this._image, this.currentFrame.x, this.currentFrame.y, this.currentFrame.width, this.currentFrame.height, this._x + x, this._y + y, this.oW || this.currentFrame.width, this.oH || this.currentFrame.height );
+
+			if ( this._alpha ) {
+				context.resetAlpha();
+			}
+
 		}
 
 		this._applyShadow(context);
