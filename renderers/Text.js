@@ -301,6 +301,27 @@
 		this.notifyChange();
 	};
 	/**
+	 * Sets the font weight
+	 *
+	 * @method setWeight
+	 * @param {String} value the font weight
+	 * @example
+			this.setWeight("normal");
+	 * @example
+			this.setWeight("bold");
+	 * @example
+			this.setWeight("bolder");
+	 * @example
+			this.setWeight("lighter");
+	 */
+	Text.prototype.setBold = function(value) {
+		if ( value ) {
+			this.setWeight("bold");
+		} else {
+			this.setWeight("");
+		}
+	};
+	/**
 	 * Sets the font variant
 	 *
 	 * @method setVariant
