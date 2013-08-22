@@ -301,18 +301,14 @@
 		this.notifyChange();
 	};
 	/**
-	 * Sets the font weight
+	 * Makes the font bold or regular
 	 *
-	 * @method setWeight
-	 * @param {String} value the font weight
+	 * @method setBold
+	 * @param {Boolean} value true or false to set font bold
 	 * @example
-			this.setWeight("normal");
-	 * @example
-			this.setWeight("bold");
-	 * @example
-			this.setWeight("bolder");
-	 * @example
-			this.setWeight("lighter");
+			this.setBold(true);
+	* @example
+			this.setBold(false);
 	 */
 	Text.prototype.setBold = function(value) {
 		if ( value ) {
