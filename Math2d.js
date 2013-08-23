@@ -15,6 +15,18 @@
 	}
 
 	/**
+	 * Returns true if value is between a and b or false
+	 *
+	 * @method valueInBetween
+	 * @param {Number} value the value
+	 * @param {Number} a  between a
+	 * @param {Number} b  and between b
+	 * @return {float}
+	 */
+	Math2d.prototype.valueInBetween = function(value, a, b) {
+		return a <= value && value <= b;
+	};
+	/**
 	 * Returns x value matching the corresponding parameters of a circle
 	 *
 	 * @method getXFromCircle
