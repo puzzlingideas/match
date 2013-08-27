@@ -124,6 +124,7 @@
 		 * @example
 				this.children.healthBar = new M.renderers.Rectangle();
 		 */
+		this.onwerLayer = null;
 	}
 	/**
 	 * Notifies owner layer about a change in this object
@@ -731,11 +732,13 @@
 	 * @param {float} value the coordinates to left of the object
 	 */
     Renderizable.prototype.setLeft = function (value) {
+		this._prevX = this._x;
         if (this._scale) {
             this._x = value + this._halfWidth * this._scale.x;
         } else {
             this._x = value + this._halfWidth;
         }
+		this.updateChildrenPosition();
         this.notifyChange();
     };
 	/**
@@ -745,11 +748,13 @@
 	 * @param {float} value the coordinates to right of the object
 	 */
     Renderizable.prototype.setRight = function (value) {
+		this._prevX = this._x;
         if (this._scale) {
             this._x = value - this._halfWidth * this._scale.x;
         } else {
             this._x = value - this._halfWidth;
         }
+		this.updateChildrenPosition();
         this.notifyChange();
     };
 	/**
@@ -759,11 +764,13 @@
 	 * @param {float} value the coordinates to top of the object
 	 */
     Renderizable.prototype.setTop = function (value) {
+		this._prevY = this._y;
         if (this._scale) {
             this._y = value + this._halfHeight * this._scale.y;
         } else {
             this._y = value + this._halfHeight;
         }
+		this.updateChildrenPosition();
         this.notifyChange();
     };
 	/**
@@ -773,11 +780,13 @@
 	 * @param {float} value the coordinates to bottom of the object
 	 */
     Renderizable.prototype.setBottom = function (value) {
+		this._prevY = this._y;
         if (this._scale) {
             this._y = value - this._halfHeight * this._scale.y;
         } else {
             this._y = value - this._halfHeight;
         }
+		this.updateChildrenPosition();
         this.notifyChange();
     };
 	/**
@@ -806,6 +815,7 @@
 		this.prevY = this._y;
 		this._x = x;
 		this._y = y;
+		this.updateChildrenPosition();
 		this.notifyChange();
     };
 	/**
@@ -975,41 +985,50 @@
 	 * @method setRotation
 	 * @param {float} rotation the rotation angle
 	 */
-    Renderizable.prototype.setRotation = function (rotation) {
-        this._rotation = rotation;
-        this.notifyChange();
-    };
+	Renderizable.prototype.setRotation = function (rotation) {
+		this._rotation = rotation;
+		this.notifyChange();
+	};
 	/**
 	 * Gets the rotation angle of this object
 	 *
 	 * @method getRotation
 	 * @return {float}
 	 */
-    Renderizable.prototype.getRotation = function () {
-        return this._rotation;
-    };
+	Renderizable.prototype.getRotation = function () {
+		return this._rotation;
+	};
 	/**
 	 * Sets the x coordinate of this object
 	 *
 	 * @method setX
 	 * @param {float} x the rotation angle
 	 */
-    Renderizable.prototype.setX = function (x) {
+	Renderizable.prototype.setX = function (x) {
 		this.prevX = this._x;
-        this._x = x;
-        this.notifyChange();
-    };
+		this._x = x;
+		this.updateChildrenPosition();
+		this.notifyChange();
+	};
 	/**
 	 * Sets the y coordinate of this object
 	 *
 	 * @method setY
 	 * @param {float} y the rotation angle
 	 */
-    Renderizable.prototype.setY = function (y) {
+	Renderizable.prototype.setY = function (y) {
 		this.prevY = this._y;
-        this._y = y;
-        this.notifyChange();
+		this._y = y;
+		this.updateChildrenPosition();
+		this.notifyChange();
     };
+	Renderizable.prototype.updateChildrenPosition = function () {
+		if ( this.children ) {
+			for ( var i in this.children ) {
+				this.children.offset(this.prevX - this._X, this.prevY - this._y);
+			}
+		}
+	};
 	/**
 	 * Adds the given x and y coordinates to those of the object
 	 *
@@ -1020,8 +1039,9 @@
     Renderizable.prototype.offset = function (x, y) {
 		this.prevX = this._x;
 		this.prevY = this._y;
-        this._x += x;
-        this._y += y;
+		this._x += x;
+		this._y += y;
+		this.updateChildrenPosition();
         this.notifyChange();
     };
 	/**
@@ -1032,7 +1052,8 @@
 	 */
     Renderizable.prototype.offsetX = function (x) {
 		this.prevX = this._x;
-        this._x += x;
+		this._x += x;
+		this.updateChildrenPosition();
         this.notifyChange();
     };
 	/**
@@ -1043,7 +1064,8 @@
 	 */
     Renderizable.prototype.offsetY = function (y) {
 		this.prevY = this._y;
-        this._y += y;
+		this._y += y;
+		this.updateChildrenPosition();
         this.notifyChange();
     };
 	/**
