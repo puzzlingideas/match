@@ -1029,6 +1029,9 @@
 			}
 		}
 	};
+	Renderizable.prototype.remove = function () {
+		this.ownerLayer.remove(this);
+	};
 	/**
 	 * Adds the given x and y coordinates to those of the object
 	 *
