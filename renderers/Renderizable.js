@@ -1025,7 +1025,7 @@
 	Renderizable.prototype.updateChildrenPosition = function () {
 		if ( this.children ) {
 			for ( var i in this.children ) {
-				this.children.offset(this.prevX - this._X, this.prevY - this._y);
+				this.children[i].offset(this.prevX - this._X, this.prevY - this._y);
 			}
 		}
 	};
