@@ -91,6 +91,7 @@
         this.setFrameIndex(frameIndex);
 		this.animationName = null;
 		this._animation = null;
+		this.isPlaying = false;
 
 	};
 	/**
