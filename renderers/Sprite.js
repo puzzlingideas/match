@@ -34,23 +34,27 @@
 		 * @protected 
 		 * @type Object
 		 */
+		 this.animationName = null;
 		/**
 		 * The animation to play
 		 * @property _animation
 		 * @protected
 		 * @type Object
 		 */
+		 this._animation = null;
 		 /**
 		 * The index of the current frame
 		 * @property _frameIndex
 		 * @protected
 		 * @type int
 		 */
+		 this.frameIndex = 0;
 		 /**
 		 * Indicates if the animation if playing
 		 * @property isPlaying
 		 * @type Boolean
 		 */
+		 this.isPlaying = false;
 		 /**
 		 * Time in milliseconds when the current frame started playing
 		 * @property currentFrameStartInMillis
@@ -85,6 +89,8 @@
 		}
 
         this.setFrameIndex(frameIndex);
+		this.animationName = null;
+		this._animation = null;
 
 	};
 	/**
