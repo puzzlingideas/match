@@ -24,7 +24,7 @@
 	 * @constructor
 	 */
 	function Sound( name, url ) {
-	
+
 		/**
 		 * Array containing the same sound multiple times. Used for playing the same sound simoultaneusly.
 		 * @property audioBuffer
@@ -82,7 +82,7 @@
 	 * buffer and played
 	 * @method play
 	 */
-	Sound.prototype.play = function() {
+	Sound.prototype.play = function(loop) {
 
 		if ( ! this.canPlay() ) return;
 
@@ -93,6 +93,7 @@
 			current = this.audioBuffer[i];
 
 			if ( current.ended || current.currentTime == 0 ) {
+				current.loop = loop;
 				current.play();
 				return;
 			}
@@ -104,6 +105,7 @@
 		current = this.audioBuffer[0];
 		current.pause();
 		current.currentTime = 0;
+		current.loop = loop;
 		current.play();
 
 		if ( this.audioBuffer.length < this.MAX_BUFFER ) {
@@ -313,7 +315,13 @@
 	 * @constructor
 	 */
 	function SoundManager() {
-		
+
+		/**
+		 * The path where all sounds are located
+		 * @property path
+		 * @type String
+		 */
+		this.path = "";
 		/**
 		 * The amount of sprites remaining to load
 		 * @property toLoad
@@ -448,7 +456,7 @@
 				url = url + M.browser.supportedAudioFormat;
 			}
 
-			this[ name ] = new Sound( name, url );
+			this[ name ] = new Sound( name, this.path + url );
 
 		}
 
