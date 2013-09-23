@@ -127,7 +127,7 @@
 
 		}
 
-		this.loop = loop;
+		this.loop = loop || this._animation.loop;
 
 		this.notifyChange();
 
@@ -178,7 +178,11 @@
 
 					} else {
 
-						this.isPlaying = false;
+						if ( this._animation.next ) {
+							this.play(this._animation.next);
+						} else {
+							this.isPlaying = false;
+						}
 
 					}
 

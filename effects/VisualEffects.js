@@ -322,7 +322,7 @@
 		if ( notVisible == l ) {
 			this.children = null;
 		} else {
-			this.notifyChange();
+			// this.notifyChange();
 		}
 	};
 
@@ -335,8 +335,8 @@
 
 	RadialParticleEmitter.prototype.setZIndex = function (value) {
 		this._zIndex = value;
-		this.notifyChange();
-		this.notifyZIndexChange();
+		// this.notifyChange();
+		// this.notifyZIndexChange();
 	};
 	/**
 	 * Creates particles that will move from the center to another part of a circle
@@ -797,11 +797,11 @@
 
 		if ( this.object._scale.x < this._x ) {
 			this.object._scale.x += this.speedX;
-			this.notifyChange();
+			// this.notifyChange();
 		}
 		if ( this.object._scale.y < this._y ) {
 			this.object._scale.y += this.speedY;
-			this.notifyChange();
+			// this.notifyChange();
 		}
 
 		if ( this.object._scale.x >= this._x && this.object._scale.y >= this._y ) {
@@ -847,11 +847,11 @@
 
 		if ( this.object._scale.x > this._x ) {
 			this.object._scale.x -= this.speedX;
-			this.notifyChange();
+			// this.notifyChange();
 		}
 		if ( this.object._scale.y > this._y ) {
 			this.object._scale.y -= this.speedY;
-			this.notifyChange();
+			// this.notifyChange();
 		}
 
 		if ( this.object._scale.x <= this._x && this.object._scale.y <= this._y ) {
