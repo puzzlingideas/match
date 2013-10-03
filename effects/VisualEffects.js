@@ -4,11 +4,23 @@
 (function(namespace, M) {
 
 	// t: current time, b: begInnIng value, c: change In value, d: duration
+	/**
+	 * @class Easing
+	 * @namespace visual
+	 * @constructor
+	 */
 	function Easing() {
 		this.def = "easeOutQuad";
 		this.math = window.Math;
 	}
-
+	/**
+	 * @method swing
+	 * @param {int} x
+	 * @param {int} t current time
+	 * @param {int} b beginning value
+	 * @param {int} c change in value
+	 * @param {int} d duration
+	 */
 	Easing.prototype.swing = function (x, t, b, c, d) {
 		return this[this.def](x, t, b, c, d);
 	};
@@ -157,15 +169,25 @@
 		this.setWidth(width);
 		this.setHeight(height);
 	}
-
+	/**
+	 * @method setWidth
+	 * @param {float} width
+	 */
 	Particle.prototype.setWidth = function(width) {
 		this._halfWidth = width / 2;
 	};
-
+	/**
+	 * @method setHeight
+	 * @param {float} height
+	 */
 	Particle.prototype.setHeight = function(height) {
 		this._halfHeight = height / 2;
 	};
-
+	/**
+	 * @method setPath
+	 * @param {Object} origin Object containing origin x and y coordinates
+	 * @param {Object} destination Object containing destination x and y coordinates
+	 */
 	Particle.prototype.setPath = function(origin, destination) {
 
 		this._x = origin.x;
@@ -174,7 +196,11 @@
 		this.direction = M.math2d.getVector2d(origin, destination);
 
 	};
-
+	/**
+	 * Updates the particle
+	 * @method onLoop
+	 * @protected
+	 */
 	Particle.prototype.onLoop = function() {
 
 		this.alpha -= this.vanishRate;
@@ -183,10 +209,11 @@
 		this._x += this.speed * this.direction.x;
 		this._y += this.speed * this.direction.y;
 
-		// this.notifyChange();
-
 	};
-
+	/**
+	 * Renders the particle
+	 * @method onRender
+	 */
 	Particle.prototype.onRender = function(context, canvas, cameraX, cameraY) {
 
 		if ( this.alpha >= 0 ) {
@@ -202,13 +229,24 @@
 		}
 
 	};
-
+	/**
+	 * Sets the zIndex of this object
+	 * @method setZIndex
+	 * @param {int} value the zIndex
+	 */
 	Particle.prototype.setZIndex = function (value) {
         this._zIndex = value;
-        // this.notifyChange();
-        // this.notifyZIndexChange();
     };
-
+	/**
+	 * Returns whether this object is visible and is inside the given viewport
+	 *
+	 * @method isVisible
+	 * @param {float} cameraX0 the left coordinate of the camera
+	 * @param {float} cameraY0 the top coordinate of the camera
+	 * @param {float} cameraX1 the right coordinate of the viewport
+	 * @param {float} cameraY1 the bottom coordinate of the viewport
+	 * @return {Boolean}
+	 */
 	Particle.prototype.isVisible = function(cameraX0, cameraY0, cameraX1, cameraY1) {
 		if ( this.alpha <= 0 ) {
 			return false;

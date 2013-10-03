@@ -29,7 +29,7 @@
 	}
 	TimeCounter.prototype.initialize = function() {
 		this._lastTime = M.getTime();
-		this.elapsed = this.run;
+		this.elapsed = this._run;
 		return false;
 	};
 	/**
@@ -45,8 +45,9 @@
 	/**
 	 * Returns true if time has elapsed since last update or false
 	 * @method elapsed
+	 * @private
 	 */
-	TimeCounter.prototype.run = function() {
+	TimeCounter.prototype._run = function() {
 
 		var currentTime = M.getTime();
 
@@ -58,6 +59,14 @@
 		return false;
 
 	};
+	/**
+	 * Resets the counter
+	 * @method reset
+	 */
+	TimeCounter.prototype.reset = function() {
+		this.elapsed = this.initialize;
+	};
+
 	TimeCounter.prototype.elapsed = TimeCounter.prototype.initialize;
 
 	M.TimeCounter = TimeCounter;

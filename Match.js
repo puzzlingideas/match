@@ -680,11 +680,58 @@ var M = window.M || {};
 	Match.prototype.isDoubleBuffered = function() {
 		return this.render == this.renderDoubleBuffer;
 	};
+	/**
+	 * Sets the size of the current canvas
+	 *
+	 * @method setCanvasSize
+	 * @param {float} w width
+	 * @param {float} h height
+	 */
 	Match.prototype.setCanvasSize = function(w, h) {
 		if ( this.frontBuffer ) {
 			this.frontBuffer.canvas.width = w;
 			this.frontBuffer.canvas.height = h;
 			this.updateBufferSize();
+		}
+	};
+	/**
+	 * Stretches the contents of the canvas to the size of the html document.
+	 * This works as forcing a fullscreen, if the navigation bars of the browser were hidden.
+	 *
+	 * NOTE: This method behaves exactly as setCanvasStretchTo using document client width and height
+	 *
+	 * @method setCanvasStretch
+	 * @param {Boolean} value true to stretch, false to set default values
+	 */
+	Match.prototype.setCanvasStretch = function(value) {
+		if ( value ) {
+			this.setCanvasStretchTo(this.frontBuffer.canvas.style.width, this.frontBuffer.canvas.style.height);
+		} else {
+			this.setCanvasStretchTo("auto", "auto");
+		}
+	};
+	/**
+	 * Stretches the contents of the canvas to the size of the html document.
+	 *
+	 * @method setCanvasStretchTo
+	 * @param {String} w width in coordinates, as css pixels or percentages
+	 * @param {String} h height in coordinates, as css pixels or percentages
+	 */
+	Match.prototype.setCanvasStretchTo = function(w, h) {
+		if ( this.frontBuffer ) {
+			if ( w ) {
+				if ( typeof w == "number" || ( w != "auto" && w.indexOf("px") == "-1" && w.indexOf("%") == "-1" ) ) {
+					w = w + "px";
+				}
+				this.frontBuffer.canvas.style.width = w;
+			}
+
+			if ( h ) {
+				if ( typeof h == "number" || ( h != "auto" && h.indexOf("px") == "-1" && h.indexOf("%") == "-1" ) ) {
+					h = h + "px";
+				}
+				this.frontBuffer.canvas.style.height = h;
+			}
 		}
 	};
 	/**
