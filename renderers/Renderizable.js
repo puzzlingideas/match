@@ -115,16 +115,15 @@
 		 * @type float
 		 */
 		this._alpha = null;
-
-        this.set(properties);
 		/**
-		 * Child objects of this node
-		 * @property children
-		 * @type Map
-		 * @example
-				this.children.healthBar = new M.renderers.Rectangle();
+		 * Reference to the layer that contains this object
+		 * @private
+		 * @property onwerLayer
+		 * @type float
 		 */
 		this.onwerLayer = null;
+
+        this.set(properties);
 	}
 	/**
 	 * Notifies owner layer about a change in this object
@@ -139,27 +138,6 @@
 	 */
 	Renderizable.prototype.notifyZIndexChange = function() {
 		this.ownerLayer&&this.ownerLayer.zIndexChanged();
-	};
-	/**
-	 * Removes the child by the given key
-	 * @method removeChild
-	 * @param {String} key key of the object to remove
-	 */
-	Renderizable.prototype.removeChild = function(key) {
-		this.children[key] = null;
-	};
-	/**
-	 * Adds the child by the given key
-	 * @method putChild
-	 * @param {String} key key of the object
-	 * @param {Renderizable} object object to add
-	 */
-	Renderizable.prototype.putChild = function(key, object) {
-		if ( !this.children ) {
-			this.children = new Object();
-		}
-		object.ownerLayer = this.ownerLayer;
-		this.children[key] = object;
 	};
 	/**
 	 * @private
@@ -279,8 +257,12 @@
 	 * @param {int} seconds time in seconds that the fade in and fade out will take
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
-	Renderizable.prototype.move = function (x, y, seconds, onFinished) {
-		this._onLoopAnimations.push(new visual.Move(this, x, y, seconds, onFinished));
+	// Renderizable.prototype.move = function (x, y, seconds, onFinished) {
+		// this._onLoopAnimations.push(new visual.Move(this, x, y, seconds, onFinished));
+		// return this;
+	// };
+	Renderizable.prototype.move = function (x, y, seconds, easingX, easingY, loop) {
+		this._onLoopAnimations.push(new visual.Easing(this, x, y, seconds, easingX, easingY, loop));
 		return this;
 	};
 	/**
@@ -379,8 +361,9 @@
 	 * @param {int} seconds time in seconds that the fade in and fade out will take
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
-	Renderizable.prototype.chainMove = function (x, y, seconds, onFinished) {
-		this._chainAnimations.push(new visual.Move(this, x, y, seconds, onFinished));
+	Renderizable.prototype.chainMove = function (x, y, seconds, easingX, easingY) {
+		// this._chainAnimations.push(new visual.Move(this, x, y, seconds, onFinished));
+		this._chainAnimations.push(new visual.Easing(this, x, y, seconds, easingX, easingY));
 		return this;
 	};
 	/**

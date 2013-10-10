@@ -302,7 +302,7 @@
 
 	};
 	GameLayer.prototype.renderGameObjects = function(nodes, buffer, canvas, cameraX0, cameraY0, cameraX1, cameraY1) {
-		for ( var i in nodes ) {
+		for ( var i = 0; i < nodes.length; i++ ) {
 
 			var node = nodes[i];
 

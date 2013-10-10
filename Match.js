@@ -205,13 +205,6 @@ var M = window.M || {};
 		 */
 		this._gameObjects = [];
 		/**
-		 * Array of GameObject. Contains the objects to add after a loop to avoid flickering
-		 * @property _gameObjectsToAdd
-		 * @private
-		 * @type Array
-		 */
-		this._gameObjectsToAdd = [];
-		/**
 		 * Cache used for retrieving elements from onLoopList faster
 		 * @property offScreenContext
 		 * @private
@@ -408,7 +401,7 @@ var M = window.M || {};
 	 */
 	Match.prototype.updateGameObjects = function(nodes, p) {
 
-		for ( var i in nodes ) {
+		for ( var i = 0; i < nodes.length; i++ ) {
 
 			var node = nodes[i];
 
@@ -705,7 +698,7 @@ var M = window.M || {};
 	 */
 	Match.prototype.setCanvasStretch = function(value) {
 		if ( value ) {
-			this.setCanvasStretchTo(this.frontBuffer.canvas.style.width, this.frontBuffer.canvas.style.height);
+			this.setCanvasStretchTo(document.documentElement.clientWidth, document.documentElement.clientHeight);
 		} else {
 			this.setCanvasStretchTo("auto", "auto");
 		}

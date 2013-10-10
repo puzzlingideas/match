@@ -3,152 +3,6 @@
  */
 (function(namespace, M) {
 
-	// t: current time, b: begInnIng value, c: change In value, d: duration
-	/**
-	 * @class Easing
-	 * @namespace visual
-	 * @constructor
-	 */
-	function Easing() {
-		this.def = "easeOutQuad";
-		this.math = window.Math;
-	}
-	/**
-	 * @method swing
-	 * @param {int} x
-	 * @param {int} t current time
-	 * @param {int} b beginning value
-	 * @param {int} c change in value
-	 * @param {int} d duration
-	 */
-	Easing.prototype.swing = function (x, t, b, c, d) {
-		return this[this.def](x, t, b, c, d);
-	};
-	Easing.prototype.easeInQuad = function (x, t, b, c, d) {
-		return c*(t/=d)*t + b;
-	};
-	Easing.prototype.easeOutQuad = function (x, t, b, c, d) {
-		return -c *(t/=d)*(t-2) + b;
-	};
-	Easing.prototype.easeInOutQuad = function (x, t, b, c, d) {
-		if ((t/=d/2) < 1) return c/2*t*t + b;
-		return -c/2 * ((--t)*(t-2) - 1) + b;
-	};
-	Easing.prototype.easeInCubic = function (x, t, b, c, d) {
-		return c*(t/=d)*t*t + b;
-	};
-	Easing.prototype.easeOutCubic = function (x, t, b, c, d) {
-		return c*((t=t/d-1)*t*t + 1) + b;
-	};
-	Easing.prototype.easeInOutCubic = function (x, t, b, c, d) {
-		if ((t/=d/2) < 1) return c/2*t*t*t + b;
-		return c/2*((t-=2)*t*t + 2) + b;
-	};
-	Easing.prototype.easeInQuart = function (x, t, b, c, d) {
-		return c*(t/=d)*t*t*t + b;
-	};
-	Easing.prototype.easeOutQuart = function (x, t, b, c, d) {
-		return -c * ((t=t/d-1)*t*t*t - 1) + b;
-	};
-	Easing.prototype.easeInOutQuart = function (x, t, b, c, d) {
-		if ((t/=d/2) < 1) return c/2*t*t*t*t + b;
-		return -c/2 * ((t-=2)*t*t*t - 2) + b;
-	};
-	Easing.prototype.easeInQuint = function (x, t, b, c, d) {
-		return c*(t/=d)*t*t*t*t + b;
-	};
-	Easing.prototype.easeOutQuint = function (x, t, b, c, d) {
-		return c*((t=t/d-1)*t*t*t*t + 1) + b;
-	};
-	Easing.prototype.easeInOutQuint = function (x, t, b, c, d) {
-		if ((t/=d/2) < 1) return c/2*t*t*t*t*t + b;
-		return c/2*((t-=2)*t*t*t*t + 2) + b;
-	};
-	Easing.prototype.easeInSine = function (x, t, b, c, d) {
-		return -c * this.math.cos(t/d * (this.math.PI/2)) + c + b;
-	};
-	Easing.prototype.easeOutSine = function (x, t, b, c, d) {
-		return c * this.math.sin(t/d * (this.math.PI/2)) + b;
-	};
-	Easing.prototype.easeInOutSine = function (x, t, b, c, d) {
-		return -c/2 * (this.math.cos(this.math.PI*t/d) - 1) + b;
-	};
-	Easing.prototype.easeInExpo = function (x, t, b, c, d) {
-		return (t==0) ? b : c * this.math.pow(2, 10 * (t/d - 1)) + b;
-	};
-	Easing.prototype.easeOutExpo = function (x, t, b, c, d) {
-		return (t==d) ? b+c : c * (-this.math.pow(2, -10 * t/d) + 1) + b;
-	};
-	Easing.prototype.easeInOutExpo = function (x, t, b, c, d) {
-		if (t==0) return b;
-		if (t==d) return b+c;
-		if ((t/=d/2) < 1) return c/2 * this.math.pow(2, 10 * (t - 1)) + b;
-		return c/2 * (-this.math.pow(2, -10 * --t) + 2) + b;
-	};
-	Easing.prototype.easeInCirc = function (x, t, b, c, d) {
-		return -c * (this.math.sqrt(1 - (t/=d)*t) - 1) + b;
-	};
-	Easing.prototype.easeOutCirc = function (x, t, b, c, d) {
-		return c * this.math.sqrt(1 - (t=t/d-1)*t) + b;
-	};
-	Easing.prototype.easeInOutCirc = function (x, t, b, c, d) {
-		if ((t/=d/2) < 1) return -c/2 * (this.math.sqrt(1 - t*t) - 1) + b;
-		return c/2 * (this.math.sqrt(1 - (t-=2)*t) + 1) + b;
-	};
-	Easing.prototype.easeInElastic = function (x, t, b, c, d) {
-		var s=1.70158;var p=0;var a=c;
-		if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
-		if (a < this.math.abs(c)) { a=c; var s=p/4; }
-		else var s = p/(2*this.math.PI) * this.math.asin (c/a);
-		return -(a*this.math.pow(2,10*(t-=1)) * this.math.sin( (t*d-s)*(2*this.math.PI)/p )) + b;
-	};
-	Easing.prototype.easeOutElastic = function (x, t, b, c, d) {
-		var s=1.70158;var p=0;var a=c;
-		if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
-		if (a < this.math.abs(c)) { a=c; var s=p/4; }
-		else var s = p/(2*this.math.PI) * this.math.asin (c/a);
-		return a*this.math.pow(2,-10*t) * this.math.sin( (t*d-s)*(2*this.math.PI)/p ) + c + b;
-	};
-	Easing.prototype.easeInOutElastic = function (x, t, b, c, d) {
-		var s=1.70158;var p=0;var a=c;
-		if (t==0) return b;  if ((t/=d/2)==2) return b+c;  if (!p) p=d*(.3*1.5);
-		if (a < this.math.abs(c)) { a=c; var s=p/4; }
-		else var s = p/(2*this.math.PI) * this.math.asin (c/a);
-		if (t < 1) return -.5*(a*this.math.pow(2,10*(t-=1)) * this.math.sin( (t*d-s)*(2*this.math.PI)/p )) + b;
-		return a*this.math.pow(2,-10*(t-=1)) * this.math.sin( (t*d-s)*(2*this.math.PI)/p )*.5 + c + b;
-	};
-	Easing.prototype.easeInBack = function (x, t, b, c, d, s) {
-		if (s == undefined) s = 1.70158;
-		return c*(t/=d)*t*((s+1)*t - s) + b;
-	};
-	Easing.prototype.easeOutBack = function (x, t, b, c, d, s) {
-		if (s == undefined) s = 1.70158;
-		return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;
-	};
-	Easing.prototype.easeInOutBack = function (x, t, b, c, d, s) {
-		if (s == undefined) s = 1.70158; 
-		if ((t/=d/2) < 1) return c/2*(t*t*(((s*=(1.525))+1)*t - s)) + b;
-		return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2) + b;
-	};
-	Easing.prototype.easeInBounce = function (x, t, b, c, d) {
-		return c - this.easeOutBounce(x, d-t, 0, c, d) + b;
-	};
-	Easing.prototype.easeOutBounce = function (x, t, b, c, d) {
-		if ((t/=d) < (1/2.75)) {
-			return c*(7.5625*t*t) + b;
-		} else if (t < (2/2.75)) {
-			return c*(7.5625*(t-=(1.5/2.75))*t + .75) + b;
-		} else if (t < (2.5/2.75)) {
-			return c*(7.5625*(t-=(2.25/2.75))*t + .9375) + b;
-		} else {
-			return c*(7.5625*(t-=(2.625/2.75))*t + .984375) + b;
-		}
-	};
-	Easing.prototype.easeInOutBounce = function (x, t, b, c, d) {
-		if (t < d/2) return this.easeInBounce (x, t*2, 0, c, d) * .5 + b;
-		return this.easeOutBounce(x, t*2-d, 0, c, d) * .5 + c*.5 + b;
-	};
-
 	/**
 	 * @class Particle
 	 * @namespace visual
@@ -694,8 +548,8 @@
 	 * @param {renderers.Renderizable} object the object to apply the effect to
 	 * @param {int} seconds fade in and out duration in seconds
 	 * @param {Boolean} fadeOut value that determines if effect will start as a fade out. Default starts fading in
-	 * @param [int] min minumum alpha value
-	 * @param [int] max maximum alpha value
+	 * @param {int} min minumum alpha value
+	 * @param {int} max maximum alpha value
 	 */
 	function ContinousFade(object, seconds, fadeOut, min, max) {
 		
@@ -760,8 +614,9 @@
 	 * @extends GameObject
 	 * @param {renderers.Renderizable} object the object to apply the effect to
 	 * @param {int} x destination x
-	 * @param [int] y destination y
-	 * @param [Function] onFinished function to execute once the animation is finished
+	 * @param {int} y destination y
+	 * @param {int} seconds duration of the animation in seconds
+	 * @param {Function} onFinished function to execute once the animation is finished
 	 */
 	function Move( object, x, y, seconds, onFinished ) {
 
@@ -810,9 +665,9 @@
 	 * @extends GameObject
 	 * @param {renderers.Renderizable} object the object to apply the effect to
 	 * @param {int} x destination x
-	 * @param [int] y destination y
-	 * @param [int] seconds duration of the effect
-	 * @param [Function] onFinished function to execute once the animation is finished
+	 * @param {int} y destination y
+	 * @param {int} seconds duration of the effect
+	 * @param {Function} onFinished function to execute once the animation is finished
 	 */
 	function ScaleUp( object, x, y, seconds, onFinished ) {
 
@@ -857,12 +712,11 @@
 	 *
 	 * @class ScaleDown
 	 * @constructor
-	 * @extends GameObject
 	 * @param {renderers.Renderizable} object the object to apply the effect to
 	 * @param {int} x destination x
-	 * @param [int] y destination y
-	 * @param [int] seconds duration of the effect
-	 * @param [Function] onFinished function to execute once the animation is finished
+	 * @param {int} y destination y
+	 * @param {int} seconds duration of the effect
+	 * @param {Function} onFinished function to execute once the animation is finished
 	 */
 	function ScaleDown( object, x, y, seconds, onFinished ) {
 
@@ -885,11 +739,9 @@
 
 		if ( this.object._scale.x > this._x ) {
 			this.object._scale.x -= this.speedX;
-			// this.notifyChange();
 		}
 		if ( this.object._scale.y > this._y ) {
 			this.object._scale.y -= this.speedY;
-			// this.notifyChange();
 		}
 
 		if ( this.object._scale.x <= this._x && this.object._scale.y <= this._y ) {
@@ -899,19 +751,18 @@
 
 		return true;
 
-};
+	};
 
 	/**
 	 * Creates a Twinkle object to be applied to the given renderers.Renderizable.
 	 * Twinkles the object when the onLoop method is called
 	 *
-	 * @class ScaleDown
+	 * @class Twinkle
 	 * @constructor
-	 * @extends GameObject
 	 * @param {renderers.Renderizable} object the object to apply the effect to
 	 * @param {int} times times to twinkle
-	 * @param [int] duration duration in milliseconds of the effect
-	 * @param [Function] onFinished function to execute once the animation is finished
+	 * @param {int} duration duration in milliseconds of the effect
+	 * @param {Function} onFinished function to execute once the animation is finished
 	 */
 	function Twinkle(object, times, duration, onFinished) {
 		this.object = object;
@@ -967,8 +818,8 @@
 	 * @extends GameObject
 	 * @param {renderers.Renderizable} object the object to apply the effect to
 	 * @param {float} angle angle to rotate the object to
-	 * @param [int] seconds duration in seconds of the effect
-	 * @param [Function] onFinished function to execute once the animation is finished
+	 * @param {int} seconds duration in seconds of the effect
+	 * @param {Function} onFinished function to execute once the animation is finished
 	 */
 	function Rotate( object, angle, seconds, onFinished ) {
 
