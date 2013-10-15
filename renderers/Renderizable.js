@@ -90,24 +90,24 @@
 		/**
 		 * Array that contains animations for this object
 		 * @private
-		 * @property _onLoopAnimations
+		 * @property behaviours
 		 * @type Array
 		 */
-        this._onLoopAnimations = [];
+        this.behaviours = new M.ArrayList();
 		/**
 		 * Array that contains chained animations for this object
 		 * @private
-		 * @property _chainAnimations
+		 * @property chainedBehaviours
 		 * @type Array
 		 */
-        this._chainAnimations = [];
+        this.chainedBehaviours = new M.ArrayList();
 		/**
 		 * Array that contains timers for this object
 		 * @private
 		 * @property _onLoopTimers
 		 * @type Array
 		 */
-        this._onLoopTimers = [];
+        this._onLoopTimers = new M.ArrayList();
 		/**
 		 * object transparency
 		 * @private
@@ -123,7 +123,10 @@
 		 */
 		this.onwerLayer = null;
 
+		this._raisedNotVisible = false;
+
         this.set(properties);
+
 	}
 	/**
 	 * Notifies owner layer about a change in this object
@@ -153,8 +156,6 @@
     Renderizable.prototype.onLoop = function (p) {
         this._loopThroughAnimations();
         this._loopThroughTimers();
-		this.prevX = this._x;
-		this.prevY = this._y;
         if (this.onUpdate) this.onUpdate(p);
     };
 	/**
@@ -195,27 +196,30 @@
 	Renderizable.prototype.getAlpha = function() {
 		return this._alpha;
 	};
+	/**
+	 * Loops through the animations of an object. When the animation
+	 * is complete it is removed from the list.
+	 * @method _loopThroughAnimations
+	 * @private
+	 */
 	Renderizable.prototype._loopThroughAnimations = function () {
-		var i = 0,
-			l = this._onLoopAnimations.length,
-			c;
-		for (; i < l; i++) {
-			if (!this._onLoopAnimations[i].onLoop()) {
-				this._onLoopAnimations.splice(i, 1);
+
+		function doLoop(item, index, list) {
+			if ( !item.onLoop() ) {
+				list.quickRemove(index);
 			}
 		}
-		if ( this._chainAnimations.length ) {
-			if (!this._chainAnimations[0].onLoop()) {
-				this._chainAnimations.splice(0, 1);
-			}
-		}
+
+		this.behaviours.each(doLoop);
+		this.chainedBehaviours.each(doLoop);
+
 	};
 	/**
 	 * Clears the animation loop
 	 * @method clearAnimations
 	 */
 	Renderizable.prototype.clearAnimations = function () {
-		this._onLoopAnimations = new Array();
+		this.behaviours = new Array();
 	};
 	/**
 	 * Adds a fade in animation to this object
@@ -224,7 +228,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.fadeIn = function (seconds, onFinished) {
-		this._onLoopAnimations.push(new visual.FadeIn(this, seconds, onFinished));
+		this.behaviours.push(new visual.FadeIn(this, seconds, onFinished));
 		return this;
 	};
 	/**
@@ -234,7 +238,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.fadeOut = function (seconds, onFinished) {
-		this._onLoopAnimations.push(new visual.FadeOut(this, seconds, onFinished));
+		this.behaviours.push(new visual.FadeOut(this, seconds, onFinished));
 		return this;
 	};
 	/**
@@ -246,7 +250,7 @@
 	 * @param {int} [max] maximum alpha value, defaults to 1
 	 */
 	Renderizable.prototype.continousFade = function (seconds, fadeOutFirst, min, max) {
-		this._onLoopAnimations.push(new visual.ContinousFade(this, seconds, fadeOutFirst, min, max));
+		this.behaviours.push(new visual.ContinousFade(this, seconds, fadeOutFirst, min, max));
 		return this;
 	};
 	/**
@@ -254,15 +258,13 @@
 	 * @method move
 	 * @param {float} x the destination x coordinate
 	 * @param {float} y the destination y coordinate
-	 * @param {int} seconds time in seconds that the fade in and fade out will take
+	 * @param {String} easingX Ease function name for x axis
+	 * @param {String} easingY Ease function name for y axis
+	 * @param {Boolean} loop Start over when reched destination
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
-	// Renderizable.prototype.move = function (x, y, seconds, onFinished) {
-		// this._onLoopAnimations.push(new visual.Move(this, x, y, seconds, onFinished));
-		// return this;
-	// };
-	Renderizable.prototype.move = function (x, y, seconds, easingX, easingY, loop) {
-		this._onLoopAnimations.push(new visual.Easing(this, x, y, seconds, easingX, easingY, loop));
+	Renderizable.prototype.move = function (x, y, seconds, easingX, easingY, loop, onFinished) {
+		this.behaviours.push(new visual.Easing(this, x, y, seconds, easingX, easingY, loop, onFinished));
 		return this;
 	};
 	/**
@@ -274,7 +276,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.scaleUp = function (x, y, seconds, onFinished) {
-		this._onLoopAnimations.push(new visual.ScaleUp(this, x, y, seconds, onFinished));
+		this.behaviours.push(new visual.ScaleUp(this, x, y, seconds, onFinished));
 		return this;
 	};
 	/**
@@ -286,7 +288,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.scaleDown = function (x, y, seconds, onFinished) {
-		this._onLoopAnimations.push(new visual.ScaleDown(this, x, y, seconds, onFinished));
+		this.behaviours.push(new visual.ScaleDown(this, x, y, seconds, onFinished));
 		return this;
 	};
 	/**
@@ -297,7 +299,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.twinkle = function (timesToTwinkle, durationInMilliseconds, onFinished) {
-		this._onLoopAnimations.push(new visual.Twinkle(this, timesToTwinkle, durationInMilliseconds, onFinished));
+		this.behaviours.push(new visual.Twinkle(this, timesToTwinkle, durationInMilliseconds, onFinished));
 		return this;
 	};
 	/**
@@ -308,7 +310,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.rotate = function (angle, seconds, onFinished) {
-		this._onLoopAnimations.push(new visual.Rotate(this, angle, seconds, onFinished));
+		this.behaviours.push(new visual.Rotate(this, angle, seconds, onFinished));
 		return this;
 	};
 	/**
@@ -318,7 +320,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.chainWait = function (seconds, onFinished) {
-		this._chainAnimations.push(new visual.Wait(this, seconds, onFinished));
+		this.chainedBehaviours.push(new visual.Wait(this, seconds, onFinished));
 		return this;
 	};
 	/**
@@ -328,7 +330,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.chainFadeIn = function (seconds, onFinished) {
-		this._chainAnimations.push(new visual.FadeIn(this, seconds, onFinished));
+		this.chainedBehaviours.push(new visual.FadeIn(this, seconds, onFinished));
 		return this;
 	};
 	/**
@@ -338,7 +340,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.chainFadeOut = function (seconds, onFinished) {
-		this._chainAnimations.push(new visual.FadeOut(this, seconds, onFinished));
+		this.chainedBehaviours.push(new visual.FadeOut(this, seconds, onFinished));
 		return this;
 	};
 	/**
@@ -350,7 +352,7 @@
 	 * @param {int} [max] maximum alpha value, defaults to 1
 	 */
 	Renderizable.prototype.chainContinousFade = function (seconds, fadeOutFirst, min, max) {
-		this._chainAnimations.push(new visual.ContinousFade(this, seconds, fadeOutFirst, min, max));
+		this.chainedBehaviours.push(new visual.ContinousFade(this, seconds, fadeOutFirst, min, max));
 		return this;
 	};
 	/**
@@ -362,8 +364,8 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.chainMove = function (x, y, seconds, easingX, easingY) {
-		// this._chainAnimations.push(new visual.Move(this, x, y, seconds, onFinished));
-		this._chainAnimations.push(new visual.Easing(this, x, y, seconds, easingX, easingY));
+		// this.chainedBehaviours.push(new visual.Move(this, x, y, seconds, onFinished));
+		this.chainedBehaviours.push(new visual.Easing(this, x, y, seconds, easingX, easingY));
 		return this;
 	};
 	/**
@@ -375,7 +377,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.chainScaleUp = function (x, y, seconds, onFinished) {
-		this._chainAnimations.push(new visual.ScaleUp(this, x, y, seconds, onFinished));
+		this.chainedBehaviours.push(new visual.ScaleUp(this, x, y, seconds, onFinished));
 		return this;
 	};
 	/**
@@ -387,7 +389,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.chainScaleDown = function (x, y, seconds, onFinished) {
-		this._chainAnimations.push(new visual.ScaleDown(this, x, y, seconds, onFinished));
+		this.chainedBehaviours.push(new visual.ScaleDown(this, x, y, seconds, onFinished));
 		return this;
 	};
 	/**
@@ -398,7 +400,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.chainTwinkle = function (timesToTwinkle, durationInMilliseconds, onFinished) {
-		this._chainAnimations.push(new visual.Twinkle(this, timesToTwinkle, durationInMilliseconds, onFinished));
+		this.chainedBehaviours.push(new visual.Twinkle(this, timesToTwinkle, durationInMilliseconds, onFinished));
 		return this;
 	};
 	/**
@@ -409,7 +411,7 @@
 	 * @param {Function} onFinished function to call once the animation finishes
 	 */
 	Renderizable.prototype.chainRotate = function (angle, seconds, onFinished) {
-		this._chainAnimations.push(new visual.Rotate(this, angle, seconds, onFinished));
+		this.chainedBehaviours.push(new visual.Rotate(this, angle, seconds, onFinished));
 		return this;
 	};
 	/**
@@ -934,8 +936,22 @@
 	 * @return {Boolean}
 	 */
     Renderizable.prototype.isVisible = function (cameraX0, cameraY0, cameraX1, cameraY1) {
+    	
 		if ( this._alpha == 0 || !this._visible ) return false;
-		return this.isIn(cameraX0, cameraY0, cameraX1, cameraY1);
+    	
+    	var insideViewport = this.isIn(cameraX0, cameraY0, cameraX1, cameraY1);
+
+    	if ( this.onOutsideViewport ) {
+			if ( !(this._raisedNotVisible && insideViewport) ) {
+				this.onOutsideViewport();
+				this._raisedNotVisible = true;
+			} else {
+				this._raisedNotVisible = false;
+			}
+		}
+
+		return insideViewport; 
+    
     };
 	/**
 	 * Returns whether this object is inside the given rectangle

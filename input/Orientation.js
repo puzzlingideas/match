@@ -10,7 +10,6 @@
 	}
 
 	function Orientation() {
-		window.addEventListener("deviceorientation", deviceorientation, false);
 	}
 
 	Orientation.prototype.orientate = function(event) {
@@ -49,8 +48,19 @@
 		}
 	};
 
+	Orientation.prototype.bind = function() {
+		window.addEventListener("deviceorientation", deviceorientation, false);
+		M.setOrientation(this);
+	};
+
+	Orientation.prototype.unbind = function() {
+		window.removeEventListener("deviceorientation", deviceorientation);
+		M.setOrientation(null);
+	};
+
 	if ( window.DeviceOrientationEvent ) {
 		instance = new Orientation();
+		instance.bind();
 		M.setOrientation(instance);
 	} else {
 		console.warn("This device does not suport HTML5 orientation");

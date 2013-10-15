@@ -82,6 +82,22 @@
 		this.x = x - this._halfViewportWidth;
 		this.y = y - this._halfViewportHeight;
 	};
+
+	Camera.prototype.getLeftFromLayer = function(layer) {
+		return this.x * layer.parrallaxFactor.x;
+	};
+
+	Camera.prototype.getTopFromLayer = function(layer) {
+		return this.y * layer.parrallaxFactor.y;
+	};
+
+	Camera.prototype.getBottomFromLayer = function(layer) {
+		return this.getTopFromLayer(layer) + this.viewportHeight;
+	};
+
+	Camera.prototype.getRightFromLayer = function(layer) {
+		return this.getLeftFromLayer(layer) + this.viewportWidth;
+	};
 	
 	M.onLoopProperties.camera = M.camera = new Camera();
 

@@ -35,7 +35,7 @@
 		this.size = 0;
 	}
 
-	LinkedList.prototype.tArray = function() {
+	LinkedList.prototype.toArray = function() {
 		var indexed = [];
 		while ( this.next() ) {
 			indexed.push(this.current);

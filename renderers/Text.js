@@ -120,6 +120,25 @@
 		this.set( properties );
 
 	}
+
+	Text.prototype.fillText = function(x , y) {
+
+		if ( this.multiLine ) {
+			for ( var i = 0; i < this.multiLine.length; i++ ) {
+				context.fillText( this.multiLine[i], x, y + i * this.getHeight() );
+			}
+		} else {
+			context.fillText( this._text, x, y );
+		}
+
+		if ( this._strokeStyle ) {
+			context.strokeStyle = this._strokeStyle;
+			context.lineWidth = this._lineWidth || 1;
+			context.strokeText(this._text, x, y );
+		}
+
+	};
+
 	/**
 	 * Renders the current text in the provided context
 	 *
@@ -131,13 +150,8 @@
 	 */
 	Text.prototype.onRender = function(context, canvas, cameraX, cameraY) {
 
-		context.save();
-
-		this._applyShadow(context);
+		this._applyOperation(context);
 		this._applyAlpha(context);
-		this._applyTranslation(context, cameraX, cameraY);
-		this._applyRotation(context);
-		this._applyScale(context);
 
 		context.font = this._style + this._variant + this._weight + this._size + this._family;
 
@@ -147,21 +161,25 @@
 
 		context.fillStyle = this._fillStyle;
 
-		if ( this.multiLine ) {
-			for ( var i = 0; i < this.multiLine.length; i++ ) {
-				context.fillText( this.multiLine[i], 0, i * this.getHeight() );
-			}
+		this._applyShadow(context);
+
+		if ( this._rotation || this._scale ) {
+
+			context.save();
+
+			this._applyTranslation(context, cameraX, cameraY);
+			this._applyRotation(context);
+			this._applyScale(context);
+
+			this.fillText(0, 0);
+
+			context.restore();
+
 		} else {
-			context.fillText( this._text, 0, 0 );
-		}
 
-		if ( this._strokeStyle ) {
-			context.strokeStyle = this._strokeStyle;
-			context.lineWidth = this._lineWidth || 1;
-			context.strokeText(this._text, 0, 0 );
-		}
+			this.fillText(this._x, this._y);
 
-		context.restore();
+		}
 
 	};
 	/**

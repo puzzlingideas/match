@@ -17,6 +17,8 @@
 	 */
 	function Easing(object, endValueX, endValueY, durationSeconds, easingMethodX, easingMethodY, loop) {
 
+		this.object = object;
+
 		this.endValueX = endValueX;
 		this.endValueY = endValueY;
 
@@ -25,17 +27,39 @@
 	
 		this.currentFrame = 1;
 
-		this.totalFrames = durationSeconds * M.getAverageFps();
+		this.durationSeconds = durationSeconds;
 
 		this.mathCached = Math;
 
-		this.object = object;
+		this.totalFrames = 0;
 		
 		this.loop = loop;
 
 	}
 
 	Easing.prototype._init = function() {
+
+		var durationSeconds = this.durationSeconds;
+
+		if ( typeof durationSeconds == "string" && durationSeconds.indexOf("px") != -1 ) {
+			
+			durationSeconds = parseInt(durationSeconds);
+			
+			var xDistanceToCover = this.endValueX - this.object.getX();
+			var yDistanceToCover = this.endValueY - this.object.getY();
+
+			var pixelsPerSecond = durationSeconds;
+
+			var timeToCoverX = xDistanceToCover / pixelsPerSecond;
+			var timeToCoverY = yDistanceToCover / pixelsPerSecond;
+
+			durationSeconds = Math.max(timeToCoverX, timeToCoverY);
+
+		}
+
+		this.totalFrames = durationSeconds * M.getAverageFps();
+
+		this.currentFrame = 0;
 		this.startValueX = this.object.getX();
 		this.startValueY = this.object.getY();
 		this.endValueX = this.endValueX - this.startValueX;
@@ -52,9 +76,14 @@
 		this.currentFrame++;
 		if ( this.currentFrame <= this.totalFrames ) {
 			return true;
-		} else if ( this.loop ) {
-			this.currentFrame = 0;
-			return true;
+		} else {
+			if ( this.onFinished ) {
+				this.onFinished.apply(this.object);
+			}
+			if ( this.loop ) {
+				this.onLoop = this._init;
+				return true;
+			}
 		}
 		return false;
 	};

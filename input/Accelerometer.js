@@ -10,7 +10,6 @@
 	}
 
 	function Accelerometer() {
-		window.addEventListener("devicemotion", devicemotion, false);
 	}
 
 	Accelerometer.prototype.accelerate = function(event) {
@@ -59,8 +58,17 @@
 		}
 	};
 
-	instance = new Accelerometer();
+	Accelerometer.prototype.bind = function() {
+		window.addEventListener("devicemotion", devicemotion, false);
+		M.setAccelerometer(this);
+	};
 
-	M.setAccelerometer(instance);
+	Accelerometer.prototype.unbind = function() {
+		window.removeEventListener("devicemotion", devicemotion);
+		M.setAccelerometer(null);
+	};
+
+	instance = new Accelerometer();
+	instance.bind();
 
 })(window.Match);

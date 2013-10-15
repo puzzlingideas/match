@@ -66,18 +66,6 @@
 		 */
 		this.isDragging = false;
 
-		if ( M.browser.isFirefox  ) {
-			document.addEventListener("DOMMouseScroll", mouseWheelHelperFireFox, false);
-		} else if ( M.browser.name == "MSIE 9.0" ) {
-			document.addEventListener("onwheel", mouseWheelHelper, false);
-		} else {
-			document.addEventListener("mousewheel", mouseWheelHelper, false);
-		}
-		document.addEventListener("mousedown", mouseDownHelper, false);
-		document.addEventListener("mouseup", mouseUpHelper, false);
-		document.addEventListener("mousemove", mouseMoveHelper, false);
-		document.addEventListener("click", mouseClickHelper, false);
-
 	}
 
 	/**
@@ -414,8 +402,37 @@
 
 	}
 
-	instance = new Mouse();
+	Mouse.prototype.bind = function() {
+		if ( M.browser.isFirefox  ) {
+			document.addEventListener("DOMMouseScroll", mouseWheelHelperFireFox, false);
+		} else if ( M.browser.name == "MSIE 9.0" ) {
+			document.addEventListener("onwheel", mouseWheelHelper, false);
+		} else {
+			document.addEventListener("mousewheel", mouseWheelHelper, false);
+		}
+		document.addEventListener("mousedown", mouseDownHelper, false);
+		document.addEventListener("mouseup", mouseUpHelper, false);
+		document.addEventListener("mousemove", mouseMoveHelper, false);
+		document.addEventListener("click", mouseClickHelper, false);
+		M.setMouse(this);
+	};
 
-	M.setMouse(instance);
+	Mouse.prototype.unbind = function() {
+		if ( M.browser.isFirefox  ) {
+			document.removeEventListener("DOMMouseScroll", mouseWheelHelperFireFox);
+		} else if ( M.browser.name == "MSIE 9.0" ) {
+			document.removeEventListener("onwheel", mouseWheelHelper);
+		} else {
+			document.removeEventListener("mousewheel", mouseWheelHelper);
+		}
+		document.removeEventListener("mousedown", mouseDownHelper);
+		document.removeEventListener("mouseup", mouseUpHelper);
+		document.removeEventListener("mousemove", mouseMoveHelper);
+		document.removeEventListener("click", mouseClickHelper);
+		M.setMouse(null);
+	};
+
+	instance = new Mouse();
+	instance.bind();
 
 })(window.Match);

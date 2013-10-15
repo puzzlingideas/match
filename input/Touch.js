@@ -6,23 +6,18 @@
 	var instance;
 
 	function touchStartHelper(event) {
-		// event.preventDefault();
 		instance.start(event);
 	}
 	function touchEndHelper(event) {
-		// event.preventDefault();
 		instance.end(event);
 	}
 	function touchCancelHelper(event) {
-		// event.preventDefault();
 		instance.cancel(event);
 	}
 	function touchLeaveHelper(event) {
-		// event.preventDefault();
 		instance.leave(event);
 	}
 	function touchMoveHelper(event) {
-		// event.preventDefault();
 		instance.move(event);
 	}
 
@@ -32,10 +27,6 @@
 		 * IE handles touch with MSPointerDown, MSPointerUp and MSPointerMove. We must update this interfac
 		 * to support IE or user will have to default to mouse
 		 */
-
-		document.addEventListener("touchstart", touchStartHelper, false);
-		document.addEventListener("touchend", touchEndHelper, false);
-		document.addEventListener("touchmove", touchMoveHelper, false);
 
 		this.x = 0;
 		this.y = 0;
@@ -201,8 +192,21 @@
 		}
 	};
 
-	instance = new Touch();
+	Touch.prototype.bind = function() {
+		document.addEventListener("touchstart", touchStartHelper, false);
+		document.addEventListener("touchend", touchEndHelper, false);
+		document.addEventListener("touchmove", touchMoveHelper, false);
+		M.setTouch(this);
+	};
 
-	M.setTouch(instance);
+	Touch.prototype.unbind = function() {
+		document.removeEventListener("touchstart", touchStartHelper);
+		document.removeEventListener("touchend", touchEndHelper);
+		document.removeEventListener("touchmove", touchMoveHelper);
+		M.setTouch(null);
+	};
+
+	instance = new Touch();
+	instance.bind();
 
 })(window.Match);

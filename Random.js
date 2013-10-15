@@ -66,10 +66,23 @@
 	 *
 	 * @method color
 	 * @return {String}
-	 * @example "rgb(100,100,30)"
+	 * @example "M.random.rgb(100,100,30)"
 	 */
 	Random.prototype.color = function() {
 		return M.color.random();
+	};
+	/**
+	 * Returns a 2d point from an area
+	 *
+	 * @method area
+	 * @return {Object}
+	 * @example "M.random.area(0, 0, 100, 10)"
+	 */
+	Random.prototype.area = function(minX, minY, maxX, maxY) {
+		return {
+			x: M.random.integer(minX, maxX),
+			y: M.random.integer(minY, maxY)
+		}
 	};
 
 	M.random = new Random();
