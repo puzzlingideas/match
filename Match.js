@@ -240,6 +240,8 @@ var M = window.M || {};
 
 		this.setDoubleBuffer(false);
 
+		this.plugins = new Object();
+
 		var self = this;
 		/*
 		 * Start game loop when document is loaded
@@ -249,6 +251,45 @@ var M = window.M || {};
 		});
 
 	}
+	
+	Match.prototype.registerClass = function() {
+	
+		var namespace = arguments[0].split("\."),
+			clousure = arguments[arguments.length - 1],
+			current = window,
+			l = namespace.length - 1,
+			dependencies = [],
+			name;
+				
+		for ( var i = 0; i < l; i++ ) {
+			name = namespace[i];
+			if ( !current[name] ) {
+				current[name] = new Object();
+			}
+			current = current[name];
+		}
+		
+		//Adds the default namespace as a dependency so it is available as the first argument of the clousure
+		// dependencies.push(current);
+		
+		for ( var i = 1; i < arguments.length - 1; i++ ) {
+			dependencies.push(arguments[i]);
+		}
+		
+		current[namespace[l]] = clousure.apply(clousure, dependencies);
+		current[namespace[l]].namespace = arguments[0];
+
+	};
+
+	Match.prototype.registerGameEntity = function() {
+		arguments[0] = "game." + arguments[0];
+		this.registerClass.apply(this, arguments);
+	};
+
+	Match.prototype.registerPlugin = function() {
+		arguments[0] = "M.plugins." + arguments[0];
+		this.registerClass.apply(this, arguments);
+	};
 
 	Match.prototype.setUpGameLoop = function() {
 

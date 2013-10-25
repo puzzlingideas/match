@@ -15,12 +15,15 @@
 	 * @param {String} easingMethodY easing function to apply to the y axis
 	 * Note: for more information on easing please go to http://www.gizma.com/easing/#sin3
 	 */
-	function Easing(object, endValueX, endValueY, durationSeconds, easingMethodX, easingMethodY, loop) {
+	function Easing(object, endValueX, endValueY, durationSeconds, easingMethodX, easingMethodY, loop, onFinished) {
 
 		this.object = object;
 
 		this.endValueX = endValueX;
 		this.endValueY = endValueY;
+		
+		this.startValueX = 0;
+		this.startValueY = 0;
 
 		this.easingMethodX = this[easingMethodX] || this["linearTween"];
 		this.easingMethodY = this[easingMethodY] || this.easingMethodX;
@@ -34,6 +37,10 @@
 		this.totalFrames = 0;
 		
 		this.loop = loop;
+		
+		this._needsStartValue = true;
+		
+		this.onFinished = onFinished;
 
 	}
 
@@ -60,20 +67,35 @@
 		this.totalFrames = durationSeconds * M.getAverageFps();
 
 		this.currentFrame = 0;
-		this.startValueX = this.object.getX();
-		this.startValueY = this.object.getY();
-		this.endValueX = this.endValueX - this.startValueX;
-		this.endValueY = this.endValueY - this.startValueY;
+		
+		if ( this._needsStartValue || !this.loop ) {
+
+			this.startValueX = this.object.getX();
+			this.startValueY = this.object.getY();
+			
+			this.endValueX = this.endValueX - this.startValueX;
+			this.endValueY = this.endValueY - this.startValueY;
+			
+			this._needsStartValue = false;
+			
+		}
+		
+		
 		this.onLoop = this._ease;
+		
 		return true;
+		
 	};
 	
 	Easing.prototype._ease = function () {
+	
 		this.object.setLocation(
 			this.easingMethodX(this.currentFrame, this.startValueX, this.endValueX, this.totalFrames), 
 			this.easingMethodY(this.currentFrame, this.startValueY, this.endValueY, this.totalFrames)
 		);
+		
 		this.currentFrame++;
+		
 		if ( this.currentFrame <= this.totalFrames ) {
 			return true;
 		} else {
@@ -85,7 +107,9 @@
 				return true;
 			}
 		}
+		
 		return false;
+		
 	};
 
 	Easing.prototype.onLoop = Easing.prototype._init;

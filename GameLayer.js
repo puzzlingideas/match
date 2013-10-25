@@ -11,7 +11,7 @@
 	 * @class GameLayer
 	 * @constructor
 	 */
-	function GameLayer() {
+	function GameLayer(name) {
 		/**
 		 * Object that applies post processing to the layer.
 		 * By default no actions are taken.
@@ -93,6 +93,12 @@
 		 * @type Array
 		 */
 		this._onLoopAnimations = [];
+		/**
+		 * Name of the layer
+		 * @property name
+		 * @type String
+		 */
+		this.name = name;
 
 		this.result = this.buffer.canvas;
 

@@ -21,6 +21,27 @@
 	 * @static
 	 */
 	function Keyboard() {
+		/**
+		 * Map of <String, Boolean> containing true for keys that are being pressed
+		 * @property keysDown
+		 * @type {Map}
+		 */
+		this.keysDown = {
+			length: 0
+		};
+		/**
+		 * Map of <String, Boolean> containing true for keys that were released
+		 * @property keysUp
+		 * @type {Map}
+		 */
+		this.keysUp = null;
+		/**
+		 * Map of <String, Boolean> containing true for keys that were pressed (down -> executes and disables, up -> enables)
+		 * @property keysUp
+		 * @type {Map}
+		 */
+		this.keysPressed = {            
+		};
 	}
 
 	Keyboard.prototype.bind = function() {
@@ -69,28 +90,6 @@
 	Keyboard.prototype[123] = "f12";
 	Keyboard.prototype[145] = "numlock";
 	Keyboard.prototype[220] = "pipe";
-
-    /**
-     * Map of <String, Boolean> containing true for keys that are being pressed
-     * @property keysDown
-     * @type {Map}
-     */
-    Keyboard.prototype.keysDown = {
-        length: 0
-    };
-    /**
-     * Map of <String, Boolean> containing true for keys that were released
-     * @property keysUp
-     * @type {Map}
-     */
-    Keyboard.prototype.keysUp = null;
-    /**
-     * Map of <String, Boolean> containing true for keys that were pressed (down -> executes and disables, up -> enables)
-     * @property keysUp
-     * @type {Map}
-     */
-    Keyboard.prototype.keysPressed = {            
-    };
     /**
      * Method that gets executed when the user is pressing a key
      * @method fireDown

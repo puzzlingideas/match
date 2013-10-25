@@ -1,7 +1,7 @@
 /**
  * @module Match
  */
-(function(M) {
+M.registerPlugin("RenderizableDragger", Match, function(M) {
 
 	function dummyFunction() {
 	}
@@ -106,14 +106,14 @@
 	};
 	/**
 	 * Returns whether dragging is enabled or not
-	 * @method enable
+	 * @method getEnabled
 	 */
 	RenderizableDragger.prototype.getEnabled = function() {
 		return this._enabled;
 	};
 	/**
 	 * Returns whether Match is updating game objects or not
-	 * @method enable
+	 * @method getUpdateGameObjectsEnabled
 	 */
 	RenderizableDragger.prototype.getUpdateGameObjectsEnabled = function() {
 		return this._updateGameObjectsEnabled;
@@ -126,8 +126,6 @@
 		this.setEnabled(false);
 	};
 
-	M.tools = M.tools || new Object();
+	return new RenderizableDragger();
 
-	M.tools.renderizableDragger = new RenderizableDragger();
-
-})(Match);
+});

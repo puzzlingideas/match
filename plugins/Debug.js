@@ -1,7 +1,7 @@
 /**
  * @module Match
  */
-(function(M) {
+M.registerPlugin("Debug", Match, function(M) {
 
 	/**
 	 * Adds debug capabilities  to Match
@@ -77,8 +77,6 @@
 
 	};
 
-	M.tools = M.tools || new Object();
+	return new Debug();
 
-	M.tools.debug = new Debug();
-
-})(Match);
+});

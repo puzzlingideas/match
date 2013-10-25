@@ -102,6 +102,13 @@
 		 */
         this.chainedBehaviours = new M.ArrayList();
 		/**
+		 * Index of the behaviour that's being executed at the moment
+		 * @private
+		 * @property _currentChainedBehaviour
+		 * @type int
+		 */
+		this._currentChainedBehaviour = 0;
+		/**
 		 * Array that contains timers for this object
 		 * @private
 		 * @property _onLoopTimers
@@ -205,14 +212,23 @@
 	Renderizable.prototype._loopThroughAnimations = function () {
 
 		function doLoop(item, index, list) {
-			if ( !item.onLoop() ) {
+			if ( item && !item.onLoop() ) {
 				list.quickRemove(index);
 			}
 		}
 
 		this.behaviours.each(doLoop);
-		this.chainedBehaviours.each(doLoop);
-
+		
+		if ( this.chainedBehaviours.size ) {
+			if ( !this.chainedBehaviours._list[this._currentChainedBehaviour].onLoop() ) {
+				this._currentChainedBehaviour++;
+			}
+			if ( this._currentChainedBehaviour == this.chainedBehaviours.size ) {
+				this.chainedBehaviours.removeAll();
+				this._currentChainedBehaviour = 0;
+			}
+		}
+		
 	};
 	/**
 	 * Clears the animation loop
@@ -1134,4 +1150,4 @@
         return this.height;
     };
 
-})(window.M, window.M.effects.visual);
+})(M, M.effects.visual);

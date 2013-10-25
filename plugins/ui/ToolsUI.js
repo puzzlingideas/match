@@ -1,4 +1,4 @@
-(function(M) {
+M.registerPlugin("ui.ToolsUI", function() {
 
 	var CSS_FILE = "/code/match/trunk/tools/ToolsUI.css";
 
@@ -86,8 +86,6 @@
 		document.body.appendChild(this.panel);
 	};
 
-	Match.tools = Match.tools || new Object();
+	return new ToolsUI();
 
-	Match.tools.UI = new ToolsUI();
-
-})(Match);
+});
