@@ -551,6 +551,14 @@
 	Text.prototype.getShadow = function() {
 		return this._shadow;
 	};
+	/**
+	 * Returns the constructor's name
+	 *
+	 * @method toString
+	 */
+    Text.prototype.toString = function() {
+		return "Text";
+    };
 
 	M.extend( Text, Renderizable );
 

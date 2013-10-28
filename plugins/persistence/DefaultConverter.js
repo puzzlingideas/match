@@ -1,3 +1,7 @@
+/**
+ * @module Match
+ * @submodule plugins
+ */
 M.registerPlugin("persistence.converters.DefaultConverter", function(Persistence) {
 
 	function DefaultConverter() {
@@ -13,11 +17,10 @@ M.registerPlugin("persistence.converters.DefaultConverter", function(Persistence
 	}
 
 	DefaultConverter.prototype.canConvert = function(object) {
-		// return false;
-		return object.constructor.name == "Rectangle";
+		return false;
 	};
 	
-	DefaultConverter.prototype.convert = function(object) {
+	DefaultConverter.prototype.convertToSerializable = function(object) {
 	
 		var jsonObject = {
 				namespace: object.constructor.namespace,

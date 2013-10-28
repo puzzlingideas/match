@@ -1,5 +1,6 @@
 /**
  * @module Match
+ * @submodule plugins
  */
 M.registerPlugin("Debug", Match, function(M) {
 
@@ -22,8 +23,6 @@ M.registerPlugin("Debug", Match, function(M) {
 	Debug.prototype.setEnabled = function(value) {
 
 		if ( value ) {
-
-			if ( !M.onAfterLoop ) M.onAfterLoop = new M.EventListener();
 
 			M.onAfterLoop.addEventListener(this._debugGameLoop);
 
@@ -65,15 +64,24 @@ M.registerPlugin("Debug", Match, function(M) {
 	Debug.prototype._debugGameLoop = function() {
 		
 		var m = M,
-			mouse = M.mouse;
+			mouse = M.mouse,
+			line = 20;
 
 		m.frontBuffer.font = "18px sans-serif";
 		m.frontBuffer.fillStyle = "yellow";
-		m.frontBuffer.fillText( m.getFps() + "fps", 20, 20 );
+		m.frontBuffer.fillText( m.getFps() + "fps", 20, line );
+		line += 20;		
 
 		if ( mouse ) {
-			m.frontBuffer.fillText( "[" + mouse.x + ", " + mouse.y + "]", 20, 40 );
+			m.frontBuffer.fillText( "Mouse [" + mouse.x + ", " + mouse.y + "]", 20, line );
+			line += 20;
 		}
+
+		m.frontBuffer.fillText( "Camera [" + m.camera._x + ", " + m.camera._y + "]", 20, line );
+		line += 20;
+		
+		m.frontBuffer.fillText( m._gameObjects.length + " objects", 20, line );
+		line += 20;
 
 	};
 

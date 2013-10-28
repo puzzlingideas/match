@@ -71,6 +71,10 @@
 				});
 		 */
 		this.onImageError = new EventListener();
+		/**
+		 * Map used to store sprites
+		 */
+		this.assets = {};
 
     }
 
@@ -239,7 +243,7 @@
 
             }
 
-            this[ i ] = img;
+            this.assets[ i ] = img;
 
         }
 
@@ -283,4 +287,4 @@
 
     M.sprites = M.SpriteManager;
 
-})(M || (M = {}),M.EventListener || (M.EventListener = {}));
+})(M, EventListener);

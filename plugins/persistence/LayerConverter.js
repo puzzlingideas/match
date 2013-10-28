@@ -1,3 +1,7 @@
+/**
+ * @module Match
+ * @submodule plugins
+ */
 M.registerPlugin("persistence.converters.LayerConverter", function(Persistence) {
 
 	function LayerConverter() {

@@ -1,7 +1,7 @@
 /**
  * @module Match
  */
-(function(M) {
+(function(M, EventListener) {
 
 	function onloadeddata() {
 		M.sounds[ this.name ].setReady();
@@ -348,7 +348,7 @@
 					loadingText.setText("Loaded " + (e.total - e.remaining) + " of " + e.total);
 				});
 		 */
-		this.onSoundLoaded = new M.EventListener();
+		this.onSoundLoaded = new EventListener();
 		/**
 		 * EventListener that gets called when all sounds of a pack are finished loading
 		 * @property onAllSoundsLoaded
@@ -360,7 +360,7 @@
 					alert("All sounds are ready");
 				});
 		 */
-		this.onAllSoundsLoaded = new M.EventListener();
+		this.onAllSoundsLoaded = new EventListener();
 		/**
 		 * EventListener that gets called whenever a sound cannot be loaded
 		 * @property onSoundError
@@ -372,7 +372,7 @@
 					alert("could not load sound " + sound);
 				});
 		 */
-		this.onSoundError = new M.EventListener();
+		this.onSoundError = new EventListener();
 		
 		/**
 		 * If there were errors while loading sounds this attribute becomes true
@@ -381,6 +381,10 @@
 		 * @type Boolean
 		 */
         this.error = false;
+		/**
+		 * Map used to store sounds
+		 */
+		this.assets = {};
 
 	}
 	/**
@@ -456,11 +460,11 @@
 				url = url + M.browser.supportedAudioFormat;
 			}
 
-			this[ name ] = new Sound( name, this.path + url );
+			this.assets[ name ] = new Sound( name, this.path + url );
 
 		}
 
-		this[ name ].name = name;
+		this.assets[ name ].name = name;
 
 	};
 	/**
@@ -532,4 +536,4 @@
 
 	M.SoundManager = M.sounds = new SoundManager();
 
-})( window.Match );
+})( Match, EventListener );

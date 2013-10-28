@@ -135,7 +135,7 @@
 	Keyboard.prototype.update = function() {
 		this.keysUp = null;
         for ( var i in this.keysPressed ) {
-            if ( this.keysPressed[i] == true ) {
+            if ( this.keysPressed[i] ) {
                 this.keysPressed[i] = false;
             }
         }

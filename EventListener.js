@@ -1,7 +1,7 @@
 /**
  * @module Match
  */
-(function(M) {
+(function(namespace) {
 
 	/**
 	 * Provides an easy solution to event handling
@@ -56,9 +56,16 @@
 	 * @method raise
 	 */
 	EventListener.prototype.raise = function() {
-		for ( var i = 0, l = this.listeners.length; i < l; i++ ) {
+	
+		var i = 0,
+			l = this.listeners.length;
+		
+		if ( l == 0 ) return;
+		
+		for ( var i = 0; i < l; i++ ) {
 			this.listeners[i](arguments);
 		}
+		
 	};
 	/**
 	 * @method removeEventListener
@@ -76,6 +83,6 @@
 		this.listeners = new Array();
 	};
 
-	M.EventListener = EventListener;
+	namespace.EventListener = EventListener;
 
-})(window.Match);
+})(window);

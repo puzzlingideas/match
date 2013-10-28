@@ -1,5 +1,6 @@
 /**
  * @module Match
+ * @submodule input
  */
 (function(M) {
 
@@ -346,7 +347,7 @@
 		return 2;
 	};
 	/**
-	 * Returns whether the mouse is over the given object
+	 * Fires mouse event on the object that is under the mouse and clears input
 	 * @method update
 	 */
 	Mouse.prototype.update = function() {
@@ -382,12 +383,16 @@
 
 		Mouse.prototype.mousemove = function(e) {
 			this.eventMouseMove = e;
+			this.prevX = this.x;
+			this.prevY = this.y;
 			this.x = e.layerX - e.target.offsetLeft;
 			this.y = e.layerY - e.target.offsetTop;
 		};
 
 		Mouse.prototype.click = function( e ) {
 			this.events[ e.button ].click = e;
+			this.prevX = this.x;
+			this.prevY = this.y;
 			this.x = e.layerX - e.target.offsetLeft;
 			this.y = e.layerY - e.target.offsetTop;
 		};
@@ -396,6 +401,8 @@
 
 		Mouse.prototype.mousemove = function( e ) {
 			this.eventMouseMove = e;
+			this.prevX = this.x;
+			this.prevY = this.y;
 			this.x = e.offsetX;
 			this.y = e.offsetY;
 		};

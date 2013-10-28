@@ -423,6 +423,14 @@
 		}
 
 	};
+	/**
+	 * Returns the constructor's name
+	 *
+	 * @method toString
+	 */
+    Circle.prototype.toString = function() {
+		return "Circle";
+    };
 
 	M.extend(Circle, Renderizable);
 

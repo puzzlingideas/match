@@ -21,6 +21,30 @@ M.registerPlugin("ui.ToolsUI", function() {
 			document.getElementsByTagName("head")[0].appendChild(fileref);
 		}
 
+	};	
+	/**
+	 * Creates a button element
+	 * @method _createOption
+	 * @param {String} value value of the option
+	 * @param {String} text text of the option
+	 */
+	ToolsUI.prototype.createButton = function(text, clss) {
+		var button = document.createElement("button");
+			button.innerHTML = text;
+			button.setAttribute("class", clss);
+		return button;
+	};
+	/**
+	 * Creates an option element
+	 * @method _createOption
+	 * @param {String} value value of the option
+	 * @param {String} text text of the option
+	 */
+	ToolsUI.prototype.createOption = function(value, text) {
+		var option = document.createElement("option");
+			option.setAttribute("value", value);
+			option.innerHTML = text;
+		return option;
 	};
 
 	ToolsUI.prototype.createUIElement = function(text, callback, enabled) {
@@ -40,41 +64,41 @@ M.registerPlugin("ui.ToolsUI", function() {
 
 	ToolsUI.prototype.createUI = function() {
 
-		this.createUIElement("Pause", function() {
-			M.pause();
-			if ( M.isPaused() ) {
-				this.setAttribute("class", "enabled");
-			} else {
-				this.setAttribute("class", "");
-			}
-		}, M.isPaused());
+		// this.createUIElement("Pause", function() {
+			// M.pause();
+			// if ( M.isPaused() ) {
+				// this.setAttribute("class", "enabled");
+			// } else {
+				// this.setAttribute("class", "");
+			// }
+		// }, M.isPaused());
 
-		this.createUIElement("Debug", function() {
-			M.tools.debug.setEnabled(!M.tools.debug.getEnabled());
-			if ( M.tools.debug.getEnabled() ) {
-				this.setAttribute("class", "enabled");
-			} else {
-				this.setAttribute("class", "");
-			}
-		}, M.tools.debug.getEnabled());
+		// this.createUIElement("Debug", function() {
+			// M.tools.debug.setEnabled(!M.tools.debug.getEnabled());
+			// if ( M.tools.debug.getEnabled() ) {
+				// this.setAttribute("class", "enabled");
+			// } else {
+				// this.setAttribute("class", "");
+			// }
+		// }, M.tools.debug.getEnabled());
 
-		this.createUIElement("Drag", function() {
-			M.tools.renderizableDragger.setEnabled(!M.tools.renderizableDragger.getEnabled());
-			if ( M.tools.renderizableDragger.getEnabled() ) {
-				this.setAttribute("class", "enabled");
-			} else {
-				this.setAttribute("class", "");
-			}
-		}, M.tools.renderizableDragger.getEnabled());
+		// this.createUIElement("Drag", function() {
+			// M.tools.renderizableDragger.setEnabled(!M.tools.renderizableDragger.getEnabled());
+			// if ( M.tools.renderizableDragger.getEnabled() ) {
+				// this.setAttribute("class", "enabled");
+			// } else {
+				// this.setAttribute("class", "");
+			// }
+		// }, M.tools.renderizableDragger.getEnabled());
 
-		this.createUIElement("Update", function() {
-			M.tools.renderizableDragger.setUpdateGameObjectsEnabled(!M.tools.renderizableDragger.getUpdateGameObjectsEnabled());
-			if ( M.tools.renderizableDragger.getUpdateGameObjectsEnabled() ) {
-				this.setAttribute("class", "enabled");
-			} else {
-				this.setAttribute("class", "");
-			}
-		}, M.tools.renderizableDragger.getUpdateGameObjectsEnabled());
+		// this.createUIElement("Update", function() {
+			// M.tools.renderizableDragger.setUpdateGameObjectsEnabled(!M.tools.renderizableDragger.getUpdateGameObjectsEnabled());
+			// if ( M.tools.renderizableDragger.getUpdateGameObjectsEnabled() ) {
+				// this.setAttribute("class", "enabled");
+			// } else {
+				// this.setAttribute("class", "");
+			// }
+		// }, M.tools.renderizableDragger.getUpdateGameObjectsEnabled());
 
 	};
 

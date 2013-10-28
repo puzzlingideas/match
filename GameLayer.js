@@ -11,7 +11,7 @@
 	 * @class GameLayer
 	 * @constructor
 	 */
-	function GameLayer(name) {
+	function GameLayer(name, zIndex) {
 		/**
 		 * Object that applies post processing to the layer.
 		 * By default no actions are taken.
@@ -98,7 +98,14 @@
 		 * @property name
 		 * @type String
 		 */
-		this.name = name;
+		this.name = name || "layer" + M._gameLayers.length;
+		/**
+		 * z-index of this layer. Match uses this attribute to sort the layers
+		 * @property _zIndex
+		 * @private
+		 * @type {int}
+		 */
+		this._zIndex = zIndex || 0;
 
 		this.result = this.buffer.canvas;
 
@@ -275,8 +282,8 @@
 
 		if ( this.needsRedraw ) {
 
-			var cameraX0 = p.camera.x * this.parrallaxFactor.x,
-				cameraY0 = p.camera.y * this.parrallaxFactor.y,
+			var cameraX0 = p.camera._x * this.parrallaxFactor.x,
+				cameraY0 = p.camera._y * this.parrallaxFactor.y,
 				cameraX1 = cameraX0 + p.camera.viewportWidth,
 				cameraY1 = cameraY0 + p.camera.viewportHeight,
 				buffer = this.buffer,
@@ -336,11 +343,36 @@
 	GameLayer.prototype.addToGame = function() {
 		M.pushGameLayer(this);
 	};
+	/**
+	 * Tells the layer about a change in some attribute of one of its renderizables
+	 * @method renderizableChanged
+	 * @private
+	 */
 	GameLayer.prototype.renderizableChanged = function() {
 		this.needsRedraw = true;
 	};
+	/**
+	 * Tells the layer about a change in the z-index of one of its renderizables
+	 * @method zIndexChanged
+	 * @private
+	 */
 	GameLayer.prototype.zIndexChanged = function() {
 		this.needsSorting = true;
+	};
+	/**
+	 * Sets the z-index of this layer and makes Match sort the layers accordingly
+	 * @method setZIndex
+	 */
+	GameLayer.prototype.setZIndex = function(value) {
+		this._zIndex = value;
+		M.sortLayers();
+	};
+	/**
+	 * Returns the z-index of this layer
+	 * @method getZIndex
+	 */
+	GameLayer.prototype.getZIndex = function() {
+		return this._zIndex;
 	};
 	/**
 	 * Pushes an object into the onRenderList

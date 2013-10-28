@@ -1,85 +1,125 @@
-// document.addEventListener( "DOMContentLoaded", function() {
+/**
+ * @module Match
+ * @submodule plugins
+ */
+M.registerPlugin("persistence.Persistence", M.plugins.persistence.converters, function(converters) {
 
-	M.registerPlugin("persistence.Persistence", M.plugins.persistence.converters, function(converters) {
+	/**
+	 * Object used to store/retrieve the current content located in the game layers.
+	 *
+	 * @class Persistence
+	 * @constructor
+	 */
+	function Persistence() {
+	
+		this.container = document.createElement("div");
+		this.container.setAttribute("id", "persistence");
 
-		// var CSS_FILE = "/code/match/trunk/tools/Persistence.css";
+		this.saveButton = M.plugins.ui.ToolsUI.createButton("Save", "save");
+		this.loadButton = M.plugins.ui.ToolsUI.createButton("Load", "load");
 		
-		/**
-		 * Object used to store/retrieve the current content located in the game layers.
-		 *
-		 * @class Persistence
-		 * @constructor
-		 */
-		function Persistence() {
-			
-			// M.tools.UI.ToolsUI.loadCss(CSS_FILE);
+	}
+
+	/**
+	 * Returns a suitable converter for the given object
+	 * @method getConverter
+	 * @param {Object} object the object to get the converter for. If there is no specific converter defined for this
+	 * object then a default converter will be used
+	 * @return {Object} converter
+	 */
+	Persistence.prototype.getConverter = function(object) {
+		for ( var i in converters ) {
+			if ( converters[i].canConvert(object) ) {
+				return converters[i];
+			}
+		}
+		return converters.DefaultConverter;
+	};
+	/**
+	 * Returns a json representing the current state of the scene
+	 * @method save
+	 * @return {String} json
+	 */
+	Persistence.prototype.save = function() {
 		
-			// this.entitySelect = document.createElement("select");
-			// this.entitySelect.setAttribute("size", 10);
+		var cLayer,
+			cObject,
+			json = {
+				assets: {
+					sprites: [],
+					sounds: []
+				},
+				layers: []
+			},
+			jsonLayer,
+			jsonObject,
+			spriteConverter = converters.SpriteConverter;
+			soundConverter = converters.SoundConverter;
+		
+		for ( var i in M.sprites ) {
+			cObject = M.sprites[i];
+			if ( spriteConverter.canConvert(cObject) ) {
+				json.assets.sprites.push(spriteConverter.convertToSerializable(cObject));
+			}
+		}
+		
+		for ( var i in M.sounds ) {
+			cObject = M.sounds[i];
+			if ( soundConverter.canConvert(cObject) ) {
+				json.assets.sounds.push(soundConverter.convertToSerializable(cObject));
+			}
+		}
+					
+		for ( var i = 0; i < M._gameLayers.length; i++ ) {
+		
+			cLayer = M._gameLayers[i];
 			
-			// this.layerSelect = document.createElement("select");
-			// this.layerSelect.setAttribute("size", 10);
+			jsonLayer = {
+				renderizables: []
+			};
 			
-			// document.body.appendChild(this.entitySelect);
-			// document.body.appendChild(this.layerSelect);
+			for ( var j = 0; j < cLayer.onRenderList.length; j++ ) {
+				
+				cObject = cLayer.onRenderList[j];
+				
+				jsonLayer.renderizables.push(this.getConverter(cObject).convertToSerializable(cObject));
 			
-			// this.updateEntitySelect();
-			// this.updateLayerSelect();
-			// this.bind();
+			}
+			
+			json.layers.push(jsonLayer);
 			
 		}
-
-		/**
-		 * Returns a suitable converter 
-		 */
-		Persistence.prototype.getConverter = function(object) {
-			for ( var i in converters ) {
-				if ( converters[i].canConvert(object) ) {
-					return converters[i];
-				}
-			}
-			return converters.DefaultConverter;
-		};
 		
-		Persistence.prototype.save = function() {
-			
-			var cLayer,
-				cObject,
-				json = [],
-				jsonLayer,
-				jsonObject;
-				
-			for ( var i = 0; i < M._gameLayers.length; i++ ) {
-			
-				cLayer = M._gameLayers[i];
-				
-				jsonLayer = {
-					renderizables: []
-				};
-				
-				for ( var j = 0; j < cLayer.onRenderList.length; j++ ) {
-					
-					cObject = cLayer.onRenderList[j];
-					
-					jsonLayer.renderizables.push(this.getConverter(cObject).convert(cObject));
-				
-				}
-				
-				json.push(jsonLayer);
-				
-			}
-			
-			return JSON.stringify(json);
-			
-		};
-		/**
-		 *
-		 */
-		Persistence.prototype.load = function() {
-		};
+		return JSON.stringify(json);
 		
-		return new Persistence();
+	};
+	/**
+	 * Restores the state of the scene to the given json
+	 * @method load
+	 * @param {String} json
+	 */
+	Persistence.prototype.load = function(json) {
+	};
+	/**
+	 * Restores the state of the scene to the given json
+	 * @method load
+	 * @param {String} json
+	 */
+	Persistence.prototype._initialize = function(json) {
+		
+		this.container.appendChild(this.saveButton);
+		this.container.appendChild(this.loadButton);
+		
+		document.body.appendChild(this.container);
+		
+	};
 
+	var instance = new Persistence();
+	
+	document.addEventListener( "DOMContentLoaded", function() {
+		instance._initialize();
 	});
+	
+	return instance;
 
-// });
+});

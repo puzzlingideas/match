@@ -1,5 +1,6 @@
 /**
  * @module Match
+ * @submodule plugins
  */
 M.registerPlugin("RenderizableDragger", Match, function(M) {
 
@@ -26,8 +27,6 @@ M.registerPlugin("RenderizableDragger", Match, function(M) {
 	RenderizableDragger.prototype.setEnabled = function(value) {
 
 		if ( value ) {
-
-			if ( !M.onAfterLoop ) M.onAfterLoop = new M.EventListener();
 
 			M.onAfterLoop.addEventListener(this._dragRenderizable);
 

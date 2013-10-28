@@ -1,10 +1,12 @@
 /**
  * @module Match
+ * @submodule plugins
  */
 M.registerPlugin("CameraController", M, function(M) {
 
 	function CameraController() {
 		this._enabled = false;
+		this.speed = 4;
 	}
 	
 	/**
@@ -30,8 +32,6 @@ M.registerPlugin("CameraController", M, function(M) {
 		
 		if ( value ) {
 
-			if ( !M.onBeforeLoop ) M.onBeforeLoop = new M.EventListener();
-
 			M.onBeforeLoop.addEventListener(this._moveCamera);
 
 		} else if ( M.onBeforeLoop ) {
@@ -44,17 +44,44 @@ M.registerPlugin("CameraController", M, function(M) {
 		
 	};
 	/**
-	 * Moves the camera depending on how much pixels the mouse moved
+	 * Moves the camera. Press ctrl and any arrow key or ctrl and move the mouse. To center
+	 * the camera back at the origin press ctrl + space bar
 	 * @method _moveCamera
 	 * @private
 	 */
 	CameraController.prototype._moveCamera = function() {
 		
-		if ( M.keyboard.keysDown["ctrl"] && M.mouse.moved() ) {
-			// M.camera.centerAt(M.mouse.x, M.mouse.y);
-			console.debug("hola");
-			M.camera.centerAt(M.camera.x + 1, M.camera.y + 1);
+		var speed = M.plugins.CameraController.speed;
+		
+		if ( M.keyboard.keysDown["ctrl"] ) {
+		
+			if ( M.keyboard.keysDown["right"] ) {
+				M.camera.offsetX(speed);
+			}		
+			if ( M.keyboard.keysDown["left"] ) {
+				M.camera.offsetX(-speed);
+			}
+			if ( M.keyboard.keysDown["up"] ) {
+				M.camera.offsetY(-speed);
+			}		
+			if ( M.keyboard.keysDown["down"] ) {
+				M.camera.offsetY(speed);
+			}
+			
+			if ( M.mouse.moved() && M.mouse.down() ) {
+
+				M.camera.offsetX(M.mouse.x - M.mouse.prevX);
+				M.camera.offsetY(M.mouse.y - M.mouse.prevY);
+
+			}
+			
+			if ( M.keyboard.keysDown["space"] ) {
+				M.camera.setX(0);
+				M.camera.setY(0);
+			}
+			
 		}
+		
 		
 	};
 	

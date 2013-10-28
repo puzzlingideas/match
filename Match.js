@@ -234,9 +234,42 @@ var M = window.M || {};
 			debug: false,
 			time: 0
 		};
-
+		/**
+		 * Object that contains information about the current browser
+		 * @property browser
+		 * @type Browser
+		 */
 		this.browser = new Browser();
+		/**
+		 * Object that contains information about the current device
+		 * @property device
+		 * @type Device
+		 */
 		this.device = new Device();
+		/**
+		 * Event listener that will be raised before calling the game loop
+		 * @property onBeforeLoop
+		 * @type EventListener
+		 */
+		this.onBeforeLoop = new EventListener();
+		/**
+		 * Event listener that will be raised after calling the game loop
+		 * @property onAfterLoop
+		 * @type EventListener
+		 */
+		this.onAfterLoop = new EventListener();
+		/**
+		 * Event listener that will be raised when an object is added
+		 * @property onGameObjectPushed
+		 * @type EventListener
+		 */
+		this.onGameObjectPushed = new EventListener();
+		/**
+		 * Event listener that will be raised when an object is removed
+		 * @property onGameObjectRemoved
+		 * @type EventListener
+		 */
+		this.onGameObjectRemoved = new EventListener();
 
 		this.setDoubleBuffer(false);
 
@@ -500,19 +533,15 @@ var M = window.M || {};
 
 		if ( !this._isPlaying ) return;
 
-		if ( this.onBeforeLoop ) {
-			this.onBeforeLoop.raise();
-		}
+		this.onBeforeLoop.raise();
 
 		var p = this.onLoopProperties;
 
 		p.time = this.FpsCounter.timeInMillis;
 
-		this.updateGameObjects(this._gameObjects, p);
+		this._updateInput(p);
 
-		if ( this._updateInput ) {
-			this._updateInput(p);
-		}
+		this.updateGameObjects(this._gameObjects, p);
 
 		/*
 		 * Render using single buffer or double buffer
@@ -526,9 +555,9 @@ var M = window.M || {};
 		 */
 		this.FpsCounter.count();
 
-		if ( this.onAfterLoop ) {
-			this.onAfterLoop.raise();
-		}
+		this.onAfterLoop.raise();
+
+		if ( this.mouse ) this.mouse.clear();
 
 	};
 	/**
@@ -632,6 +661,7 @@ var M = window.M || {};
 	Match.prototype.pushGameObject = function(gameObject) {
 		if ( !gameObject.onLoop ) throw new Error("Cannot add object " + gameObject.constructor.name + ", it doesn't have an onLoop method");
 		this._gameObjects.push(gameObject);
+		this.onGameObjectPushed.raise();
 	};
 	/**
 	 * Shortcut to pushGameObject
@@ -658,12 +688,16 @@ var M = window.M || {};
 				if ( index != -1 ) {
 
 					this._gameObjects.splice( index, 1);
+					
+					this.onGameObjectRemoved.raise();
 
 				}
 
 			} else {
 
 				this._gameObjects.splice( object, 1);
+				
+				this.onGameObjectRemoved.raise();
 
 			}
 
@@ -796,15 +830,30 @@ var M = window.M || {};
 	 * Creates a new game layer, adds it to the game layer list and returns it
 	 *
 	 * @method createGameLayer
+	 * @param name name of the layer
+	 * @param zIndex z-index of the layer
 	 * @return {GameLayer} the newly created layer
 	 */
-	Match.prototype.createGameLayer = function() {
-		var gameLayer = new this.GameLayer();
+	Match.prototype.createGameLayer = function(name, zIndex) {
+		var gameLayer = new this.GameLayer(name, zIndex || M._gameLayers.length);
 		if ( this.frontBuffer ) {
 			gameLayer.setBufferSize(this.frontBuffer.canvas);
 		}
 		this.pushGameLayer(gameLayer)
 		return gameLayer;
+	};
+	/**
+	 * Forces all layers to redraw it's content
+	 *
+	 * @method createGameLayer
+	 * @param name name of the layer
+	 * @param zIndex z-index of the layer
+	 * @return {GameLayer} the newly created layer
+	 */
+	Match.prototype.redrawAllLayers = function() {
+		for ( var i = 0; i < this._gameLayers.length; i++ ) {
+			this._gameLayers[i].needsRedraw = true;
+		}
 	};
 	/**
 	 * Shortcut to createGameLayer
@@ -870,7 +919,7 @@ var M = window.M || {};
 	 * @param {GameLayer} gameLayer the layer remove from the list of layers
 	 */
 	Match.prototype.removeGameLayer = function(gameLayer) {
-		if ( !gameLayer ) {
+		if ( !gameLayer && gameLayer !== 0 ) {
 			gameLayer = this._gameLayers[0];
 		}
 		this.removeElementFromArray( gameLayer, this._gameLayers );
@@ -950,11 +999,21 @@ var M = window.M || {};
 	};
 	/**
 	 * Immediately clears the front buffer
+	 * @method clearFrontBuffer
 	 */
 	Match.prototype.clearFrontBuffer = function() {
 		if ( this.frontBuffer ) {
 			this.frontBuffer.clearRect(0, 0, this.frontBuffer.canvas.width, this.frontBuffer.canvas.height);
 		}
+	};
+	/**
+	 * Sorts layers based on their z-index
+	 * @method sortLayers
+	 */
+	Match.prototype.sortLayers = function() {
+		this._gameLayers.sort(function(a, b) {
+			return a._zIndex - b._zIndex;
+		});
 	};
 	/**
 	 * Pauses or unpauses the game loop. Also raises the M.onPause or M.onUnPause event provided those are defined

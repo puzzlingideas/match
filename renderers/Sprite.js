@@ -2,7 +2,7 @@
  * @module Match
  * @namespace renderers
  */
-(function(namespace, M, Renderizable) {
+(function(namespace, M, Renderizable, spriteAssets) {
 
 	/**
 	 * Contains an array of images that can be rendered to play an animation
@@ -82,10 +82,13 @@
 				img.frames = [{x:0, y: 0, width: img.width, height: img.height, halfWidth: img.width / 2, halfHeight: img.height / 2}];
 			}
 			this._image = img;
-		} else if ( M.sprites[ img ] ) {
-			this._image = M.sprites[img];
 		} else {
-			throw new Error("Image by id " + img + " not loaded");
+			var sprt = spriteAssets[ img ];
+			if ( sprt ) {
+				this._image = sprt;
+			} else {
+				throw new Error("Image by id " + img + " not loaded");
+			}
 		}
 
         this.setFrameIndex(frameIndex);
@@ -439,9 +442,17 @@
 		}
 		this.notifyChange();
 	};
+	/**
+	 * Returns the constructor's name
+	 *
+	 * @method toString
+	 */
+    Sprite.prototype.toString = function() {
+		return "Sprite";
+    };
 	
 	M.extend( Sprite, Renderizable );
 
 	namespace.Sprite = Sprite;
 
-})(window.Match.renderers, window.Match, window.Match.renderers.Renderizable);
+})(Match.renderers, Match, Match.renderers.Renderizable, Match.sprites.assets);

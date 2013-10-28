@@ -1133,6 +1133,14 @@
     Renderizable.prototype.getMaxSize = function() {
         return Math.max(this.getWidth(), this.getHeight());
     };
+	/**
+	 * Returns the constructor's name
+	 *
+	 * @method toString
+	 */
+    Renderizable.prototype.toString = function() {
+		return this.constructor.name;
+    };
 
 	M.renderers = M.renderers || {};
 	M.renderers.Renderizable = Renderizable;

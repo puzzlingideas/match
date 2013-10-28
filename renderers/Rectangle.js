@@ -239,6 +239,14 @@
 		this._applyShadow(context);
 
 	};
+	/**
+	 * Returns the constructor's name
+	 *
+	 * @method toString
+	 */
+    Rectangle.prototype.toString = function() {
+		return "Rectangle";
+    };
 
 	M.extend(Rectangle, Renderizable);
 

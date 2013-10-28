@@ -1,10 +1,10 @@
 /**
  * @module Match
+ * @submodule plugins
+ * @requires Match.plugins.LayerManagement
  */
 M.registerPlugin("ObjectPlacement", M, function(M) {
 
-	// var CSS_FILE = "/code/match/trunk/tools/ObjectPlacement.css";
-	
 	/**
 	 * Provides a UI to allow adding game entities to the layers of a game
 	 * that were registered using M.registerGameEntity
@@ -14,48 +14,68 @@ M.registerPlugin("ObjectPlacement", M, function(M) {
 	 */
 	function ObjectPlacement() {
 
-		// M.tools.UI.ToolsUI.loadCss(CSS_FILE);
-	
+		this.container = document.createElement("div");
+		this.container.setAttribute("id", "object-placement");
+		
 		this.entitySelect = document.createElement("select");
 		this.entitySelect.setAttribute("size", 10);
 		
-		this.layerSelect = document.createElement("select");
-		this.layerSelect.setAttribute("size", 10);
-		
 	}
-	/**
-	 * Creates an option element
-	 * @method _createOption
-	 * @param {String} value value of the option
-	 * @param {String} text text of the option
-	 * @private
-	 */
-	ObjectPlacement.prototype._createOption = function(value, text) {
-		var option = document.createElement("option");
-			option.setAttribute("value", value);
-			option.innerHTML = text;
-		return option;
-	};
 	/**
 	 * Updates the select to show all entities registered using M.registerGameEntity
 	 * @method updateEntitySelect
 	 */
 	ObjectPlacement.prototype.updateEntitySelect = function() {
-		this.entitySelect.appendChild(this._createOption(i, "none"));
+		this.entitySelect.appendChild( M.plugins.ui.ToolsUI.createOption(i, "none"));
 		for ( var i in game ) {
-			this.entitySelect.appendChild(this._createOption(i, i));
+			this.entitySelect.appendChild( M.plugins.ui.ToolsUI.createOption(i, i));
 		}
 		this.entitySelect.selectedIndex = 0;
 	};
 	/**
-	 * Updates the select to show all of the game layers in Match
-	 * @method updateLayerSelect
+	 * Set Match to allow dragging of objects
+	 * @method setEnabled
+	 * @param {Boolean} value true to enable false to disable
 	 */
-	ObjectPlacement.prototype.updateLayerSelect = function() {
-		for ( var i in M._gameLayers ) {
-			this.layerSelect.appendChild(this._createOption(i, M._gameLayers[i].name || i));
+	ObjectPlacement.prototype.setEnabled = function(value) {
+
+		if ( value ) {
+
+			document.body.addEventListener("click", this._addSelectedGameEntity);
+
+		} else if ( M.onAfterLoop ) {
+
+			document.body.removeEventListener("click", this._addSelectedGameEntity);
+
 		}
-		this.layerSelect.selectedIndex = 0;
+
+		this._enabled = value;
+
+	};
+	/**
+	 * Adds the selected game entity to the selected game layer
+	 * @method _addSelectedGameEntity
+	 * @private
+	 */
+	ObjectPlacement.prototype._addSelectedGameEntity = function() {
+		
+		var self = M.plugins.ObjectPlacement;
+		
+		if ( self.entitySelect.selectedIndex == 0 ) return;
+		
+		var layerIndex = M.plugins.LayerManagement.getSelectedLayerIndex();
+		
+		if ( layerIndex < 0 ) return;
+		
+		var constructor = game[self.entitySelect.value];
+		
+		if ( constructor ) {
+			var obj = new constructor({x: M.mouse.x, y: M.mouse.y});
+			M._gameLayers[layerIndex].push(obj);
+		} else {
+			console.log("Could not instantiate game entity");
+		}
+		
 	};
 	/**
 	 * Binds an onClick method to the document body that will add the selected entity to the
@@ -64,29 +84,12 @@ M.registerPlugin("ObjectPlacement", M, function(M) {
 	 * @private
 	 */
 	ObjectPlacement.prototype._initialize = function() {
-	
-		var self = this;
+
+		this.container.appendChild(this.entitySelect);
 		
-		document.body.appendChild(this.entitySelect);
-		document.body.appendChild(this.layerSelect);
+		document.body.appendChild(this.container);
 		
 		this.updateEntitySelect();
-		this.updateLayerSelect();
-		
-		document.body.addEventListener("click", function() {
-			
-			if ( self.entitySelect.selectedIndex == 0 ) return;
-			
-			var constructor = game[self.entitySelect.value];
-			
-			if ( constructor ) {
-				var obj = new constructor({x: M.mouse.x, y: M.mouse.y});
-				M._gameLayers[0].push(obj);
-			} else {
-				console.log("Could not instantiate game entity");
-			}
-			
-		});
 		
 	};
 

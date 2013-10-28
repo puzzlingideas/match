@@ -15,15 +15,17 @@
 		/**
 		 * The x coordinate
 		 * @property x
+		 * @private
 		 * @type float
 		 */
-		this.x = 0;
+		this._x = 0;
 		/**
 		 * The y coordinate
 		 * @property y
+		 * @private
 		 * @type float
 		 */
-		this.y = 0;
+		this._y = 0;
 		/**
 		 * Represents the width of the viewable area
 		 * @property viewportWidth
@@ -81,6 +83,33 @@
 	Camera.prototype.centerAt = function(x, y) {
 		this.x = x - this._halfViewportWidth;
 		this.y = y - this._halfViewportHeight;
+		M.redrawAllLayers();
+	};
+
+	Camera.prototype.setX = function(value) {
+		this._x = value;
+		M.redrawAllLayers();
+	};
+
+	Camera.prototype.setY = function(value) {
+		this._y = value;
+		M.redrawAllLayers();
+	};
+
+	Camera.prototype.getX = function() {
+		return this._x;
+	};
+
+	Camera.prototype.getY = function() {
+		return this._y;
+	};
+	
+	Camera.prototype.offsetX = function(value) {
+		this.setX(this._x + value);
+	};
+
+	Camera.prototype.offsetY = function(value) {
+		this.setY(this._y + value);
 	};
 
 	Camera.prototype.getLeftFromLayer = function(layer) {
