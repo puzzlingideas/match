@@ -84,7 +84,37 @@ M.registerPlugin("CameraController", M, function(M) {
 		
 		
 	};
+
+	/**
+	 * Initializes this plugin with the html elements
+	 * @method _initialize
+	 * @private
+	 */
+	CameraController.prototype._initialize = function() {
 	
-	return new CameraController;
+		var self = this,
+			template = M.getPluginTemplate("CameraController");
+		
+		this.button = template.querySelector("button");		
+		
+		this.button.innerHTML = self._enabled ? "enabled" : "disabled";
+			
+		this.button.addEventListener("click", function() {
+			self.setEnabled(!self._enabled);
+			this.innerHTML = self._enabled ? "enabled" : "disabled";
+		});
+		
+		document.body.appendChild(template);
+		
+	};
+
+	//This is a singleton instance
+	var instance = new CameraController();
+	
+	document.addEventListener( "DOMContentLoaded", function() {
+		instance._initialize();
+	});
+	
+	return instance;
 
 });

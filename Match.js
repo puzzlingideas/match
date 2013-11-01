@@ -273,7 +273,10 @@ var M = window.M || {};
 
 		this.setDoubleBuffer(false);
 
-		this.plugins = new Object();
+		this.plugins = {
+			html: {
+			}
+		};
 
 		var self = this;
 		/*
@@ -293,7 +296,7 @@ var M = window.M || {};
 			l = namespace.length - 1,
 			dependencies = [],
 			name;
-				
+		
 		for ( var i = 0; i < l; i++ ) {
 			name = namespace[i];
 			if ( !current[name] ) {
@@ -302,15 +305,19 @@ var M = window.M || {};
 			current = current[name];
 		}
 		
-		//Adds the default namespace as a dependency so it is available as the first argument of the clousure
-		// dependencies.push(current);
+		if ( ! current[namespace[l]] ) {
 		
-		for ( var i = 1; i < arguments.length - 1; i++ ) {
-			dependencies.push(arguments[i]);
+			//Adds the default namespace as a dependency so it is available as the first argument of the clousure
+			// dependencies.push(current);
+			
+			for ( var i = 1; i < arguments.length - 1; i++ ) {
+				dependencies.push(arguments[i]);
+			}
+			
+			current[namespace[l]] = clousure.apply(clousure, dependencies);
+			current[namespace[l]].namespace = arguments[0];
+		
 		}
-		
-		current[namespace[l]] = clousure.apply(clousure, dependencies);
-		current[namespace[l]].namespace = arguments[0];
 
 	};
 
@@ -322,6 +329,17 @@ var M = window.M || {};
 	Match.prototype.registerPlugin = function() {
 		arguments[0] = "M.plugins." + arguments[0];
 		this.registerClass.apply(this, arguments);
+	};
+
+	Match.prototype.registerPluginTemplate = function(id, html) {
+		this.plugins.html[id] = html;
+	};
+
+	Match.prototype.getPluginTemplate = function(id) {
+		var div = document.createElement("div");
+		div.setAttribute("id", id);
+		div.innerHTML = this.plugins.html[id];
+		return div;
 	};
 
 	Match.prototype.setUpGameLoop = function() {
@@ -539,9 +557,9 @@ var M = window.M || {};
 
 		p.time = this.FpsCounter.timeInMillis;
 
-		this._updateInput(p);
-
 		this.updateGameObjects(this._gameObjects, p);
+		
+		this._updateInput(p);
 
 		/*
 		 * Render using single buffer or double buffer

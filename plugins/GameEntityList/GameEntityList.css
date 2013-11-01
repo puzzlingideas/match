@@ -1,0 +1,9 @@
+#GameEntityList .selection.hidden {
+	display: none;
+}
+
+#GameEntityList .selection {
+	border: 2px solid;
+	border-color: #0F0;
+	position: absolute;
+}

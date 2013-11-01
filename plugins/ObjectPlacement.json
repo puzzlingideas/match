@@ -1,0 +1,8 @@
+{
+	"name": "Object Placement",
+	"description": "Lets you place game objects using the mouse",
+	"version": "1.0",
+	"requires": "LayerManagement",
+	"html": "ObjectPlacement/ObjectPlacement.html",
+	"script": "ObjectPlacement/ObjectPlacement.js"
+}

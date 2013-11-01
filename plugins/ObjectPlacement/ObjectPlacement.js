@@ -13,12 +13,13 @@ M.registerPlugin("ObjectPlacement", M, function(M) {
 	 * @constructor
 	 */
 	function ObjectPlacement() {
-
-		this.container = document.createElement("div");
-		this.container.setAttribute("id", "object-placement");
+	
+		var html = M.plugins.html["ObjectPlacement"];
 		
-		this.entitySelect = document.createElement("select");
-		this.entitySelect.setAttribute("size", 10);
+		this.entitySelect = null;
+		this.button = null;
+
+		this._enabled = false;
 		
 	}
 	/**
@@ -78,18 +79,28 @@ M.registerPlugin("ObjectPlacement", M, function(M) {
 		
 	};
 	/**
-	 * Binds an onClick method to the document body that will add the selected entity to the
-	 * selected layer
-	 * @method bind
+	 * Initializes this plugin with the html elements
+	 * @method _initialize
 	 * @private
 	 */
 	ObjectPlacement.prototype._initialize = function() {
+	
+		var self = this,
+			template = M.getPluginTemplate("ObjectPlacement");
 
-		this.container.appendChild(this.entitySelect);
-		
-		document.body.appendChild(this.container);
+		this.entitySelect = template.querySelector("select");
+		this.button = template.querySelector("button");
+
+		this.button.innerHTML = self._enabled ? "enabled" : "disabled";		
+			
+		this.button.addEventListener("click", function() {
+			self.setEnabled(!self._enabled);
+			this.innerHTML = self._enabled ? "enabled" : "disabled";
+		});
 		
 		this.updateEntitySelect();
+		
+		document.body.appendChild(template);
 		
 	};
 

@@ -12,23 +12,29 @@ M.registerPlugin("LayerManagement", M, function(M) {
 	 */
 	function LayerManagement() {
 		
-		this.container = document.createElement("div");
-		this.container.setAttribute("id", "layer-management");
+		this.layerSelect = null;
+		this.addLayerButton = null;
+		this.removeLayerButton = null;
+		this.moveLayerUpButton = null;
+		this.moveLayerDownButton = null;
 		
-		this.layerSelect = document.createElement("select");
-		this.layerSelect.setAttribute("size", 10);
-		this.layerSelect.setAttribute("class", "game-layers");
+		// this.container = document.createElement("div");
+		// this.container.setAttribute("id", "layer-management");
+		
+		// this.layerSelect = document.createElement("select");
+		// this.layerSelect.setAttribute("size", 10);
+		// this.layerSelect.setAttribute("class", "game-layers");
 				
-		this.addLayerButton = M.plugins.ui.ToolsUI.createButton("Add", "add");
-		this.removeLayerButton = M.plugins.ui.ToolsUI.createButton("Remove", "remove");
-		this.moveLayerUpButton = M.plugins.ui.ToolsUI.createButton("Up", "up");
-		this.moveLayerDownButton = M.plugins.ui.ToolsUI.createButton("Down", "down");
+		// this.addLayerButton = M.plugins.ui.ToolsUI.createButton("Add", "add");
+		// this.removeLayerButton = M.plugins.ui.ToolsUI.createButton("Remove", "remove");
+		// this.moveLayerUpButton = M.plugins.ui.ToolsUI.createButton("Up", "up");
+		// this.moveLayerDownButton = M.plugins.ui.ToolsUI.createButton("Down", "down");
 		
-		this.container.appendChild(this.layerSelect);
-		this.container.appendChild(this.addLayerButton);
-		this.container.appendChild(this.removeLayerButton);
-		this.container.appendChild(this.moveLayerUpButton);
-		this.container.appendChild(this.moveLayerDownButton);
+		// this.container.appendChild(this.layerSelect);
+		// this.container.appendChild(this.addLayerButton);
+		// this.container.appendChild(this.removeLayerButton);
+		// this.container.appendChild(this.moveLayerUpButton);
+		// this.container.appendChild(this.moveLayerDownButton);
 		
 	}
 	/**
@@ -45,7 +51,7 @@ M.registerPlugin("LayerManagement", M, function(M) {
 	};
 	/**
 	 * Binds click to button and allows for removing layers
-	 * @method _bindAddLayer
+	 * @method _bindRemoveLayer
 	 * @private
 	 */
 	LayerManagement.prototype._bindRemoveLayer = function() {
@@ -187,15 +193,23 @@ M.registerPlugin("LayerManagement", M, function(M) {
 	 */
 	LayerManagement.prototype._initialize = function() {
 
-		this.updateLayerSelect();
-		this.selectLayer(0);
+		var template = M.getPluginTemplate("LayerManagement");
 		
-		document.body.appendChild(this.container);
+		this.layerSelect = template.querySelector("select");
+		this.addLayerButton = template.querySelector(".add");
+		this.removeLayerButton = template.querySelector(".remove");
+		this.moveLayerUpButton = template.querySelector(".move-up");
+		this.moveLayerDownButton = template.querySelector(".move-down");
+		
+		this.updateLayerSelect();
+		this.selectLayer(0);		
 		
 		this._bindAddLayer();
 		this._bindRemoveLayer();
 		this._bindMoveLayerDown();
 		this._bindMoveLayerUp();
+
+		document.body.appendChild(template);
 		
 	};
 

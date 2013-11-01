@@ -308,7 +308,7 @@
 			camera = M.camera;
 		ctx.save();
 		ctx.clearRect(0, 0, cnv.width, cnv.height);
-		renderizable.onRender(ctx, cnv, camera.x, camera.y);
+		renderizable.onRender(ctx, cnv, camera._x, camera._y);
 		var imgData = ctx.getImageData(this.x, this.y, 1, 1);
 		if ( !imgData.data[3] ) return false;
 		if ( imgData.data[0] ) return true;
@@ -326,8 +326,8 @@
 	 */
 	Mouse.prototype.isOverPolygon = function (renderizable) {
 		var camera = M.camera,
-			x = this.x + camera.x,
-			y = this.y + camera.y;
+			x = this.x + camera._x,
+			y = this.y + camera._y;
 		if (renderizable._rotation) {
 			this._x = x;
 			this._y = y;
