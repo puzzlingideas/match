@@ -3,20 +3,6 @@
  */
 (function(M, EventListener) {
 
-	function onloadeddata() {
-		M.sounds[ this.name ].setReady();
-		M.sounds.toLoad--;
-		if(M.sounds.toLoad <= 0) M.sounds.onAllSoundsLoaded.raise();
-	}
-
-	function onerror() {
-		console.warn( "Unable to load " + this.src );
-        M.sounds.error = true;
-		M.sounds[ this.name ].setNotReady();
-		M.sounds.toLoad--;
-		if(M.sounds.toLoad <= 0) M.sounds.onAllSoundsLoaded.raise();
-	}
-
 	/**
 	 * Provides an interface for Audio. Holds a buffuer for simoultaneuisly playing the same sound.
 	 * @class Sound
@@ -301,6 +287,24 @@
         }
     }
 
+	function onloadeddata() {
+		M.sounds.assets[ this.name ].setReady();
+		M.sounds.toLoad--;
+		if(M.sounds.toLoad <= 0) {
+			M.sounds.onAllSoundsLoaded.raise();
+		}
+	}
+
+	function onerror() {
+		console.warn( "Unable to load " + this.src );
+        M.sounds.error = true;
+		M.sounds.assets[ this.name ].setNotReady();
+		M.sounds.toLoad--;
+		if(M.sounds.toLoad <= 0) {
+			M.sounds.onAllSoundsLoaded.raise();
+		}
+	}
+	
 	/**
 	 * Provides methods for loading and playing sounds. The event listeners inform you how many resources where loaded so far, this is 
 	 * useful for loading screens.
@@ -404,32 +408,50 @@
 				"laser": "/sounds/laser.mp3",
 				"talk": "/sounds/talk.mp3"
 			});
-	* @example
-			//Load just one file
-			M.SoundManager.load("footstep", "/sounds/footstep");
+
 	 */
-	SoundManager.prototype.load = function() {
+	SoundManager.prototype.load = function(map, onFinished, onProgress) {
 	
-		if ( arguments.length > 1 ) {
-			this.loadOne(arguments[0], arguments[1]);
+		if ( onProgress ) {
+			this.onSoundLoaded.addEventListener(onProgress);
+		}
+		if ( onFinished ) {
+			this.onAllSoundsLoaded.addEventListener(onFinished);
+		}
+
+		if ( map instanceof Array ) {
+		
+			var jsonMap = {},
+				loaded = 0,
+				self = this,
+				onJsonReceived = function(response) {
+
+					loaded++;
+					
+					var json = JSON.parse(response);
+					
+					jsonMap[json.name] = json.source;
+					
+					if ( loaded >= map.length ) {
+						self.load(jsonMap);
+					}
+				
+				};
+			
+			for ( var i = 0; i < map.length; i++ ) {
+				
+				M.Ajax.post(map[i], onJsonReceived);
+				
+			}
+		
 		} else {
-
-			var map = arguments[0];
-
-			if ( map.onProgress ) {
-				this.onSoundLoaded.addEventListener(map.onProgress);
-				map.onProgress = null;
-			}
-			if ( map.onFinish ) {
-				this.onAllSoundsLoaded.addEventListener(map.onFinish);
-				map.onFinish = null;
-			}
-
+		
 			for ( var i in map ) {
 				this.loadOne( i, map[i] );
 			}
-
+		
 		}
+
 	};
 	/**
 	 * Loads a sound from the given url and assigns it the provided name
@@ -456,11 +478,20 @@
 
 		} else {
 
-			if ( url.charAt( url.length - 4 ) != "." ) {
-				url = url + M.browser.supportedAudioFormat;
+			if ( url.substr(0, 4) == "data" ) {
+			
+				this.assets[ name ] = new Sound( name, url );
+				
+			} else {
+			
+				if ( url.lastIndexOf(".") == -1 ) {
+					url = url + M.browser.supportedAudioFormat;
+				}
+			
+				this.assets[ name ] = new Sound( name, this.path + url );
+				
 			}
 
-			this.assets[ name ] = new Sound( name, this.path + url );
 
 		}
 
@@ -521,17 +552,29 @@
 		}
 	};
 	/**
+	 * Removes the sound that matches the given id
+	 * @method remove
+	 * @param {String} id the sound id
+	 */
+	SoundManager.prototype.remove = function(id) {
+		if ( this.assets[id] ) {
+			delete this.assets[id];
+			if ( this.total - 1 >= 0 ) {
+				this.total--;
+			}
+			if ( this.toLoad - 1 >= 0 ) {
+				this.toLoad--;
+			}
+		}
+	};
+	/**
 	 * Removes all sounds
 	 * @method removeAll
 	 */
 	SoundManager.prototype.removeAll = function() {
-		for ( var i in this ) {
-			delete this[i];
-		}
-		this.audioBuffer = new Array();
-		this.src = url;
-		this.name = name;
-		this.increaseBuffer();
+		this.assets = {};
+		this.toLoad = 0;
+		this.total = 0;
 	};
 
 	M.SoundManager = M.sounds = new SoundManager();

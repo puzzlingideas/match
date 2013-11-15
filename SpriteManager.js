@@ -168,6 +168,8 @@
 	 * Loads images from a Map of String-Url or String-SpriteSheet
 	 * @method load
 	 * @param {Map<String, Url>|Map<String, Object>} images
+	 * @param {Function} onFinished callback to execute when all images are loaded
+	 * @param {Function} onProgress callback to execute when an image is loaded
 	 * @example 
 			M.SpriteManager.load({"sky": "/assets/sky.png"});
 	 * @example 
@@ -204,48 +206,76 @@
 						}
 					}
 				});
+	 * @example
+			M.SpriteManager.load([
+				"assets/sprites/sky.json",
+				"assets/sprites/sun.json",
+				"assets/sprites/ground.json"
+			]);
 	 */
-    SpriteManager.prototype.load = function( map ) {
+    SpriteManager.prototype.load = function( map, onFinished, onProgress ) {
 	
 		var current, img, i;
 
-		if ( map.onProgress ) {
-			this.onImageLoaded.addEventListener(map.onProgress);
-			map.onProgress = null;
+		if ( onFinished ) {
+			this.onAllImagesLoaded.addEventListener(onFinished);
 		}
-		if ( map.onFinish ) {
-			this.onAllImagesLoaded.addEventListener(map.onFinish);
-			map.onFinish = null;
+		if ( onProgress ) {
+			this.onImageLoaded.addEventListener(onProgress);
 		}
 
-		for ( i in map ) {
+		if ( map instanceof Array ) {
+		
+			var jsonMap = {},
+				loaded = 0,
+				self = this,
+				onJsonReceived = function(response) {
+					var json = JSON.parse(response);
+					jsonMap[json.name] = json;
+					loaded++;
+					if ( loaded >= map.length ) {
+						self.load(jsonMap);
+					}
+				};
+			
+			for ( i = 0; i < map.length; i++ ) {
+				
+				M.Ajax.post(map[i], onJsonReceived);
+				
+			}
+		
+		} else {
+		
+			for ( i in map ) {
 
-			current = map[i],
-			img = new Image();
+				current = map[i],
+				img = new Image();
 
-			img.setAttribute("data-name", i);
-            img.onload = onLoad;
-            img.onerror = onError;
+				img.setAttribute("data-name", i);
+				img.onload = onLoad;
+				img.onerror = onError;
 
-            this.total = ++this.toLoad;
+				this.total = ++this.toLoad;
 
-            if ( typeof current == "string" ) {
+				if ( typeof current == "string" ) {
 
-                img.src = this.path + current;
+					img.src = this.path + current;
 
-            } else {
+				} else {
 
-                img.src = this.path + current.source;
+					img.src = this.path + current.source;
 
-                img.frames = current.frames;
+					img.frames = current.frames;
 
-                img.animations = current.animations;
+					img.animations = current.animations;
 
-            }
+				}
 
-            this.assets[ i ] = img;
+				this.assets[ i ] = img;
 
-        }
+			}
+		
+		}
 
     };
 	/**
@@ -254,8 +284,8 @@
 	 * @param {String} id the sprite id
 	 */
 	SpriteManager.prototype.remove = function(id) {
-		if ( this[id] instanceof Image ) {
-			delete this[id];
+		if ( this.assets[id] ) {
+			delete this.assets[id];
 			if ( this.total - 1 >= 0 ) {
 				this.total--;
 			}
@@ -269,9 +299,9 @@
 	 * @method removeAll
 	 */
 	SpriteManager.prototype.removeAll = function() {
-		for ( var id in this ) {
-			this.remove(id);
-		}
+		this.assets = {};
+		this.total = 0;
+		this.toLoad = 0;
 	};
 	/**
 	 * Removes all event listeners
