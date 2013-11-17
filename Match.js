@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2011 Pablo Lagioia, Puzzling Ideas
  *
- * Match Game Engine v1.4
+ * Match Game Engine v1.5
  * http://puzzlingideas.com/
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
