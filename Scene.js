@@ -9,7 +9,6 @@
 	function Scene() {
 		this.onLoad = new EventListener();
 		this.onUnload = new EventListener();
-		this.loadingScene = null;
 		this.layers = [];
 		this.objects = [];
 		this.sprites = {};

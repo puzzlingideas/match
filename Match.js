@@ -905,6 +905,16 @@ var M = window.M || {};
 	 * @method createGameLayer
 	 */
 	Match.prototype.pushLayer = Match.prototype.pushGameLayer;
+
+	/**
+	 * Sets the current scene
+	 * @method setScene
+	 * @param {Scene} scene the scene to load
+	 * @param {Function} transition the transition applied to the scene that is leaving and the one that is entering
+	 */
+	Match.prototype.setScene = function (scene, transition) {
+		
+	};
 	/**
 	 * TODO: Complete JS Doc
 	 */
