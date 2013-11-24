@@ -69,11 +69,11 @@
 				}
 
 			} else {
-				echo "Plugin " . $pluginId . " manifest has errors";
+				header("HTTP/1.1 500 Plugin $pluginId manifest has errors");
 			}
 			
 		} else {
-			echo "Plugin " . $pluginId . " not found";
+			header("HTTP/1.1 500 Plugin $pluginId not found");
 		}	
 	
 	}

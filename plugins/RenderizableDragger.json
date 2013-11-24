@@ -1,0 +1,6 @@
+{
+	"name": "Renderizable Dragger",
+	"description": "Lets you drag renderizables to place them wherever you want",
+	"version": "1.0",
+	"script": "RenderizableDragger.js"
+}
