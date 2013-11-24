@@ -25,7 +25,8 @@
  * THE SOFTWARE.
  *
  */
-var M = window.M || {};
+var M = window.M || {},
+	game = window.game || {};
 
 /**
  * @module window

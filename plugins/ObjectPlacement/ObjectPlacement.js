@@ -100,7 +100,7 @@ M.registerPlugin("ObjectPlacement", M, function(M) {
 		
 		this.updateEntitySelect();
 		
-		document.body.appendChild(template);
+		document.querySelector("#match-plugins").appendChild(template);
 		
 	};
 

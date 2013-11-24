@@ -102,7 +102,7 @@ M.registerPlugin("GameEntityList", function() {
 			self.updateSelectionBox();
 		});
 		
-		document.body.appendChild(template);
+		document.querySelector("#match-plugins").appendChild(template);
 		
 	};
 
