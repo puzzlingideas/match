@@ -16,6 +16,8 @@ M.registerPlugin("GameEntityList", function() {
 		this.removeEntityButton = null;
 		this.selection = null;
 
+		this._initialize();
+
 	}
 	/**
 	 * Updates the select to show all entities registered using M.registerGameEntity
@@ -106,12 +108,6 @@ M.registerPlugin("GameEntityList", function() {
 		
 	};
 
-	var instance = new GameEntityList();
+	return new GameEntityList();
 	
-	document.addEventListener( "DOMContentLoaded", function() {
-		instance._initialize();
-	});
-	
-	return instance;
-
 });

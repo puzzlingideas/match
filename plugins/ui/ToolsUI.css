@@ -20,3 +20,47 @@
 #toolsUI li.enabled {
 	background: #e66b1b;
 }
+
+#match-plugins {
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	background: gray;
+	font-family: monospace;
+	overflow: auto;
+    height: 100%;
+    padding: 5px;
+}
+
+#match-plugins input,
+#match-plugins textarea,
+#match-plugins select,
+#match-plugins button {
+	border: 1px solid;
+	font-size: 1em;
+	padding: 3px;
+}
+#match-plugins input,
+#match-plugins select {
+	width: 160px;
+}
+#match-plugins button {
+	cursor: pointer;
+}
+
+#match-plugins header .title {
+	text-align: center;
+	margin: 20px 0;
+}
+#match-plugins header .subtitle {
+	text-align: center;
+	margin: 10px 0;
+}
+
+#match-plugins .hidden {
+	display: none;
+}
+
+#match-plugins .selectable {
+	cursor: pointer;
+}

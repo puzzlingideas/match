@@ -35,6 +35,8 @@ M.registerPlugin("LayerManagement", M, function(M) {
 		// this.container.appendChild(this.removeLayerButton);
 		// this.container.appendChild(this.moveLayerUpButton);
 		// this.container.appendChild(this.moveLayerDownButton);
+
+		this._initialize();
 		
 	}
 	/**
@@ -209,17 +211,11 @@ M.registerPlugin("LayerManagement", M, function(M) {
 		this._bindMoveLayerDown();
 		this._bindMoveLayerUp();
 
-		document.body.appendChild(template);
+		document.querySelector("#match-plugins").appendChild(template);
 		
 	};
 
 	//This is a singleton instance
-	var instance = new LayerManagement();
-	
-	document.addEventListener( "DOMContentLoaded", function() {
-		instance._initialize();
-	});
-	
-	return instance;
+	return new LayerManagement();
 
 });

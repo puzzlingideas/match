@@ -7,6 +7,9 @@ M.registerPlugin("CameraController", M, function(M) {
 	function CameraController() {
 		this._enabled = false;
 		this.speed = 4;
+
+		this._initialize();
+
 	}
 	
 	/**
@@ -104,17 +107,11 @@ M.registerPlugin("CameraController", M, function(M) {
 			this.innerHTML = self._enabled ? "enabled" : "disabled";
 		});
 		
-		document.body.appendChild(template);
+		document.querySelector("#match-plugins").appendChild(template);
 		
 	};
 
 	//This is a singleton instance
-	var instance = new CameraController();
-	
-	document.addEventListener( "DOMContentLoaded", function() {
-		instance._initialize();
-	});
-	
-	return instance;
+	return new CameraController();
 
 });

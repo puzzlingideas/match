@@ -1,14 +1,3 @@
-<?php
-
-	function main() {
-
-		if ( array_key_exists("plugins", $_GET) ) {
-
-			$pluginList = explode(",", $_GET["plugins"]);
-			$alreadyLoaded = array();
-
-?>
-
 document.addEventListener("DOMContentLoaded", function() {
 
 
@@ -23,13 +12,19 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	}
 
-});
-
 <?php
+
+	function main() {
+
+		if ( array_key_exists("plugins", $_GET) ) {
+
+			$pluginList = explode(",", $_GET["plugins"]);
+			$alreadyLoaded = array();
+
 			for ( $i = 0; $i < count($pluginList); $i++ ) {
 
 				loadPlugin($pluginList[$i], $alreadyLoaded);
-			
+
 			}
 		
 		} else {	
@@ -38,9 +33,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	}
 
-	function loadPlugin($pluginId, $alreadyLoaded) {
+	function loadPlugin($pluginId, &$alreadyLoaded) {
 	
 		$pluginManifest = $pluginId . ".json";
+
 
 		if ( !in_array($pluginId, $alreadyLoaded) ) {
 
@@ -65,9 +61,11 @@ document.addEventListener("DOMContentLoaded", function() {
 					if ( array_key_exists("css", $json) ) {
 					
 						$css = file_get_contents($json["css"]);
-						$css = str_replace("\'", "\"", $css);
+						$css = str_replace("'", "\"", $css);
 						$css = str_replace("\n", "", $css);
 						$css = str_replace("\r", "", $css);
+
+						$css = htmlspecialchars($css);
 					
 						echo "(function() { var style = document.createElement('style'); style.innerHTML = '${css}'; document.head.appendChild(style); })();";
 						
@@ -105,5 +103,9 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 	
 	main();
+
+	// header("Content-Type: script/text");
+
+	echo "\n\r});";
 	
 ?>

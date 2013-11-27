@@ -21,6 +21,8 @@ M.registerPlugin("ObjectPlacement", M, function(M) {
 
 		this._enabled = false;
 		
+		this._initialize();
+
 	}
 	/**
 	 * Updates the select to show all entities registered using M.registerGameEntity
@@ -105,12 +107,6 @@ M.registerPlugin("ObjectPlacement", M, function(M) {
 	};
 
 	//This is a singleton instance
-	var instance = new ObjectPlacement();
-	
-	document.addEventListener( "DOMContentLoaded", function() {
-		instance._initialize();
-	});
-	
-	return instance;
+	return new ObjectPlacement();
 
 });

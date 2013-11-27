@@ -2,6 +2,6 @@
 	"name": "ToolsUI",
 	"description": "Utils to build the UI for the plugins",
 	"version": "1.0",
-	"script": "ui/ToolsUI.css",
+	"css": "ui/ToolsUI.css",
 	"script": "ui/ToolsUI.js"
 }

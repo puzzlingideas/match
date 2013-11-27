@@ -17,6 +17,8 @@ M.registerPlugin("persistence.Persistence", M.plugins.persistence.converters, fu
 
 		this.saveButton = M.plugins.ui.ToolsUI.createButton("Save", "save");
 		this.loadButton = M.plugins.ui.ToolsUI.createButton("Load", "load");
+
+		this._initialize();
 		
 	}
 
@@ -114,12 +116,6 @@ M.registerPlugin("persistence.Persistence", M.plugins.persistence.converters, fu
 		
 	};
 
-	var instance = new Persistence();
-	
-	document.addEventListener( "DOMContentLoaded", function() {
-		instance._initialize();
-	});
-	
-	return instance;
+	return new Persistence();
 
 });
