@@ -1,8 +1,0 @@
-{
-	"name": "Game Objects",
-	"description": "Lets you select and delete game objects",
-	"version": "1.0",
-	"html": "GameEntityList/GameEntityList.html",
-	"script": "GameEntityList/GameEntityList.js",
-	"css": "GameEntityList/GameEntityList.css"
-}

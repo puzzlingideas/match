@@ -1,7 +1,0 @@
-{
-	"name": "Layer Management",
-	"description": "Lets you manage layers",
-	"version": "1.0",
-	"html": "LayerManagement/LayerManagement.html",
-	"script": "LayerManagement/LayerManagement.js"
-}

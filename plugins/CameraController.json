@@ -1,7 +1,0 @@
-{
-	"name": "Camera Controller",
-	"description": "",
-	"version": "1.0",
-	"html": "CameraController/CameraController.html",
-	"script": "CameraController/CameraController.js"
-}
