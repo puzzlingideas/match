@@ -256,14 +256,42 @@
 		this.audioBuffer.push( sound );
 
 	};
+	Sound.prototype.isMuted = function() {
+		if ( this.audioBuffer.length > 0 ) {
+			return this.audioBuffer[0].muted;
+		}
+		return false;
+	};
 	/**
-	 * Mutes or unmutes this sound
+	 * Toggles this sound on or off
+	 * @method toggle
+	 */
+	Sound.prototype.toggle = function() {
+		if ( this.isMuted() ) {
+			this.unmute();
+		} else {
+			this.mute();
+		}
+	};
+	/**
+	 * Mutes this sound
 	 * @method mute
 	 */
 	Sound.prototype.mute = function() {
 
 		this.each( function( obj ) {
-			obj.muted = ! obj.muted;
+			obj.muted = true;
+		});
+
+	};
+	/**
+	 * Unmutes this sound
+	 * @method unmute
+	 */
+	Sound.prototype.unmute = function() {
+
+		this.each( function( obj ) {
+			obj.muted = false;
 		});
 
 	};
@@ -468,7 +496,7 @@
 		
 		if ( M.browser.supportedAudioFormat == undefined ) {
 
-			this[ name ] = fakeSound;
+			this.assets[ name ] = fakeSound;
 			fakeSound.name = name;
 			this.onSoundLoaded.raise({sound: fakeSound, remaining: M.sounds.toLoad--, total: M.sounds.total});
             
@@ -505,10 +533,8 @@
 			M.SoundManager.pause();
 	 */
 	SoundManager.prototype.pause = function() {
-		for ( var i in this ) {
-			if ( this[i] instanceof Sound ) {
-				this[i].pause();
-			}
+		for ( var i in this.assets ) {
+			this.assets[i].pause();
 		}
 	};
 	/**
@@ -519,10 +545,30 @@
 			M.SoundManager.setVolume(0.6);
 	 */
 	SoundManager.prototype.setVolume = function(value) {
-		for ( var i in this ) {
-			if ( this[i] instanceof Sound ) {
-				this[i].setVolume( value );
-			}
+		for ( var i in this.assets ) {
+			this.assets[i].setVolume( value );
+		}
+	};
+	/**
+	 * Mutes all sounds
+	 * @method mute
+	 * @example 
+			M.SoundManager.mute();
+	 */
+	SoundManager.prototype.mute = function() {
+		for ( var i in this.assets ) {
+			this.assets[i].mute();
+		}
+	};
+	/**
+	 * Unmutes all sounds
+	 * @method mute
+	 * @example 
+			M.SoundManager.unmute();
+	 */
+	SoundManager.prototype.unmute = function() {
+		for ( var i in this.assets ) {
+			this.assets[i].unmute();
 		}
 	};
 	/**
@@ -531,11 +577,9 @@
 	 * @example 
 			M.SoundManager.mute();
 	 */
-	SoundManager.prototype.mute = function() {
-		for ( var i in this ) {
-			if ( this[i] instanceof Sound ) {
-				this[i].mute();
-			}
+	SoundManager.prototype.toggle = function() {
+		for ( var i in this.assets ) {
+			this.assets[i].toggle();
 		}
 	};
 	/**
@@ -545,10 +589,8 @@
 			M.SoundManager.stop();
 	 */
 	SoundManager.prototype.stop = function() {
-		for ( var i in this ) {
-			if ( this[i] instanceof Sound ) {
-				this[i].stop();
-			}
+		for ( var i in this.assets ) {
+			this.assets[i].stop();
 		}
 	};
 	/**
