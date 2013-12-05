@@ -10,9 +10,11 @@
 	 * @class Sprite
 	 * @constructor
 	 * @extends renderers.Renderizable
-	 * @param {String} [img] the key of the image loaded by M.sprites
+	 * @param {String} img the key of the image loaded by M.sprites
+	 * @param {float} x the x coordinate
+	 * @param {float} y the y coordinate
 	 */
-	function Sprite(img) {
+	function Sprite(img, x, y) {
 
 		Renderizable.apply(this);
 		
@@ -63,6 +65,8 @@
 		 */
 		
 		if ( img ) this.setImage(img);
+		
+		this.setLocation(x, y);
 		
 	}
 

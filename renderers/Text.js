@@ -121,7 +121,7 @@
 
 	}
 
-	Text.prototype.fillText = function(x , y) {
+	Text.prototype.fillText = function(context, x , y) {
 
 		if ( this.multiLine ) {
 			for ( var i = 0; i < this.multiLine.length; i++ ) {
@@ -171,13 +171,13 @@
 			this._applyRotation(context);
 			this._applyScale(context);
 
-			this.fillText(0, 0);
+			this.fillText(context, 0, 0);
 
 			context.restore();
 
 		} else {
 
-			this.fillText(this._x, this._y);
+			this.fillText(context, this._x, this._y);
 
 		}
 
