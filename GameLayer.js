@@ -217,6 +217,7 @@
 	 */
 	GameLayer.prototype.setWidth = function(value) {
 		this.buffer.canvas.width = value;
+		this.needsRedraw = true;
 	};
 	/**
 	 * Sets the height of the layer
@@ -225,6 +226,7 @@
 	 */
 	GameLayer.prototype.setHeight = function(value) {
 		this.buffer.canvas.height = value;
+		this.needsRedraw = true;
 	};
 	GameLayer.prototype.setSize = function(width, height) {
 		this.setWidth(width);

@@ -309,8 +309,6 @@ var M = window.M || {},
 		if ( ! current[namespace[l]] ) {
 		
 			//Adds the default namespace as a dependency so it is available as the first argument of the clousure
-			// dependencies.push(current);
-			
 			for ( var i = 1; i < arguments.length - 1; i++ ) {
 				dependencies.push(arguments[i]);
 			}
@@ -322,7 +320,14 @@ var M = window.M || {},
 
 	};
 
+	/**
+	 * @deprecated
+	 */
 	Match.prototype.registerGameEntity = function() {
+		console.warn("Warning this method is deprecated and will not be available in future releases. Please use registerGameObject");
+		this.registerGameObject.apply(this, arguments);
+	};
+	Match.prototype.registerGameObject = function() {
 		arguments[0] = "game." + arguments[0];
 		this.registerClass.apply(this, arguments);
 	};
@@ -827,13 +832,16 @@ var M = window.M || {},
 	 * @method updateBufferSize
 	 */
 	Match.prototype.updateBufferSize = function() {
+
 		if ( this.frontBuffer ) {
+
 			if ( this.backBuffer && this.frontBuffer ) {
 				this.backBuffer.canvas.width = this.frontBuffer.canvas.width;
 				this.backBuffer.canvas.height = this.frontBuffer.canvas.height;
 				this.backBuffer.halfWidth = this.backBuffer.canvas.width / 2;
 				this.backBuffer.halfHeight = this.backBuffer.canvas.height / 2;
 			}
+
 			this.offScreenCanvas.width = this.frontBuffer.canvas.width;
 			this.offScreenCanvas.height = this.frontBuffer.canvas.height;
 
@@ -842,7 +850,19 @@ var M = window.M || {},
 				this.collisions.PixelPerfect.testContext.canvas.height = this.offScreenCanvas.height;
 			}
 
+			this.updateLayersSize();
+
 			this.updateViewport();
+		}
+	};
+	/**
+	 * Updates the size of all layers
+	 *
+	 * @method updateLayersSize
+	 */
+	Match.prototype.updateLayersSize = function() {
+		for ( var i = 0; i < this._gameLayers.length; i++ ) {
+			this._gameLayers[i].setSize(this.frontBuffer.canvas.width, this.frontBuffer.canvas.height);
 		}
 	};
 	/**
@@ -1388,7 +1408,7 @@ var M = window.M || {},
 	};
 	Match.prototype.getSceneCenter = function() {
 		if ( this.frontBuffer ) {
-			return this.frontBuffer.getCenter();
+			return this.frontBuffer.canvas.getCenter();
 		} else {
 			return {
 				x: 0, y: 0
