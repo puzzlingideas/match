@@ -271,7 +271,7 @@ var M = window.M || {},
 		 * @type EventListener
 		 */
 		this.onGameObjectRemoved = new EventListener();
-
+		
 		this.setDoubleBuffer(false);
 
 		this.plugins = {
@@ -327,7 +327,13 @@ var M = window.M || {},
 		console.warn("Warning this method is deprecated and will not be available in future releases. Please use registerGameObject");
 		this.registerGameObject.apply(this, arguments);
 	};
+
 	Match.prototype.registerGameObject = function() {
+		// The current implementation may change to:
+		// arguments[0] = "M.game.objects" + arguments[0];
+		// arguments[0] = "M.game.classes" + arguments[0];
+		// registerGameClass;
+		console.warn("registerGameObject implementation is not final and may change");
 		arguments[0] = "game." + arguments[0];
 		this.registerClass.apply(this, arguments);
 	};
@@ -339,6 +345,64 @@ var M = window.M || {},
 
 	Match.prototype.registerPluginTemplate = function(id, html) {
 		this.plugins.html[id] = html;
+	};
+	/**
+	 * Returns a game class or object based on the given name
+	 *
+	 * @method getGameObject
+	 * @param {String} className the name of the class or object to retrieve
+	 * @return {Object} the object registered by the given className
+	 */
+	Match.prototype.getGameObject = function(className) {
+		console.warn("getGameObject implementation is not final and may change");
+		// The current implementation may change to:
+		// return this.game.objects[className];
+		return game[className];
+	};
+	/**
+	 * Instantiates a game object by the given className and calls the setters
+	 * on it provided in setAttributes
+	 *
+	 * NOTE: The class you are willing to instantiate must have a public and
+	 * non arguments constructor
+	 *
+	 * @method getGameClassInstance
+	 * @private
+	 *
+	 * @param {String} className
+	 * @param {Map} setAttributes
+	 * @return {Object} the instantiated game object
+	 */
+	Match.prototype._getClassInstance = function(className, setAttributes) {
+	
+		var path = className.split("."),
+			clazz = window,
+			instance,
+			i,
+			keyValuePair;
+		
+		for ( var i = 0; i < path.length; i++ ) {
+			clazz = clazz[path[i]];
+		}
+		
+		instance = new clazz();
+		
+		for ( i in setAttributes ) {
+			
+			keyValuePair = setAttributes[i];
+			
+			if ( instance[keyValuePair.key] ) {
+				if ( typeof instance[keyValuePair.key] == "function" ) {
+					instance[keyValuePair.key](keyValuePair.value);
+				} else {
+					instance[keyValuePair.key] = keyValuePair.value;
+				}
+			}
+			
+		}
+		
+		return instance;
+		
 	};
 
 	Match.prototype.getPluginTemplate = function(id) {
@@ -931,9 +995,59 @@ var M = window.M || {},
 	 * Sets the current scene
 	 * @method setScene
 	 * @param {Scene} scene the scene to load
+	 * @param {Layer} a layer that will be shown when loading
 	 * @param {Function} transition the transition applied to the scene that is leaving and the one that is entering
 	 */
-	Match.prototype.setScene = function (scene, transition) {
+	Match.prototype.setScene = function (scene, loadingLayer, transition) {
+
+		var m = this;
+
+		this.removeAllGameLayers();
+		
+		if (loadingLayer ) {
+			this.pushLayer(loadingLayer);
+		}
+		
+		this.sprites.onAllImagesLoaded.removeAllEventListeners();
+	
+		this.sprites.load(scene.resources.sprites, function () {
+			
+			for ( var i in scene.layers ) {
+			
+				var layer = new m.Layer,
+					layerData = scene.layers[i];
+				
+				for ( var j in layerData ) {
+				
+					var object = layerData[j],
+						instance = m._getClassInstance(object.className, object.setAttributes);
+						
+					if ( object.beforePush ) {
+						object.beforePush(instance);
+					}
+					
+					layer.push(instance);
+					
+				}
+				
+				m.pushLayer(layer);
+				
+			}
+			
+			for ( var i in scene.objects ) {
+				var object = scene.objects[i],
+					instance = m._getClassInstance(object.className, object.setAttributes);
+				if ( object.beforePush ) {
+					object.beforePush(instance);
+				}
+				m.pushGameObject(instance);
+			}
+			
+			if (loadingLayer ) {
+				m.removeLayer(loadingLayer);
+			}
+			
+		});
 		
 	};
 	/**
@@ -945,7 +1059,7 @@ var M = window.M || {},
 		return layers;
 	};
 	/**
-	 * TODO: Complete JS Doc
+	 * Pushes all provided layers into Match list of game layers
 	 */
 	Match.prototype.pushScene = function(layers) {
 		var i = 0, l = layers.length;
@@ -954,7 +1068,7 @@ var M = window.M || {},
 		}
 	};
 	/**
-	 * TODO: Complete JS Doc
+	 * Removes current layers and oushes all provided layers into Match list of game layers
 	 */
 	Match.prototype.swapScenes = function(layers) {
 		var layers = this.removeScene();
@@ -976,6 +1090,12 @@ var M = window.M || {},
 			this.removeGameObject(gameLayer.onRenderList[i]);
 		}
 	};
+	/**
+	 * Shortcut to removeGameLayer
+	 *
+	 * @method removeLayer
+	 */
+	Match.prototype.removeLayer = Match.prototype.removeGameLayer;
 	/**
 	 * Removes all game layers
 	 *

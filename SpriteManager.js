@@ -246,33 +246,49 @@
 		
 		} else {
 		
+			var alreadyLoaded = 0,
+				count = 0;
+		
 			for ( i in map ) {
+			
+				count++;
+				
+				if ( ! this.assets[ i ] ) {
+				
 
-				current = map[i],
-				img = new Image();
+					current = map[i],
+					img = new Image();
 
-				img.setAttribute("data-name", i);
-				img.onload = onLoad;
-				img.onerror = onError;
+					img.setAttribute("data-name", i);
+					img.onload = onLoad;
+					img.onerror = onError;
 
-				this.total = ++this.toLoad;
+					this.total = ++this.toLoad;
 
-				if ( typeof current == "string" ) {
+					if ( typeof current == "string" ) {
 
-					img.src = this.path + current;
+						img.src = this.path + current;
 
+					} else {
+
+						img.src = this.path + current.source;
+
+						img.frames = current.frames;
+
+						img.animations = current.animations;
+
+					}
+
+					this.assets[ i ] = img;
+				
 				} else {
-
-					img.src = this.path + current.source;
-
-					img.frames = current.frames;
-
-					img.animations = current.animations;
-
+					alreadyLoaded++;
 				}
 
-				this.assets[ i ] = img;
-
+			}
+			
+			if ( alreadyLoaded == count ) {
+				this.onAllImagesLoaded.raise();
 			}
 		
 		}
