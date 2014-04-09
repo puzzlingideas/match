@@ -19,6 +19,10 @@ You can develop games in match using OOP or any other development paradigm you l
 Lets say you have a Ninja wich has an attribute called health and a behaviour called getDamageWhenYouGetHit. This way whenever the Ninja gets hit by something that behaviour will reduce it's health.
 What could we do if we just wanted our Ninja to become invinsible? Well, just remove the getDamageWhenYouGetHit from Ninja and you're all set. Yes, you could have used an "if" statement, but when the code gets bigger you would end up with tons of "ifs" statements. This way you just add and remove behaviours and also avoid wierd hierarchy trees that you would definatelly face if you used OOP.
 
+## Examples
+
+In the tests directory you'll find examples to play with and learn more about Match and BEA.
+
 ## More information?
 
 You can find more about Match at www.puzzlingideas.com/match
