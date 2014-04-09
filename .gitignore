@@ -1,3 +1,8 @@
+.idea/
+match sublime project.sublime-project
+match sublime project.sublime-workspace
+match.php
+match.json
 documentation/api.js
 documentation/assets/css/external-small.png
 documentation/assets/css/logo.png

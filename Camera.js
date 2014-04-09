@@ -1,7 +1,7 @@
 /**
  * @module Match
  */
-(function(M) {
+(function(M, EventHandler) {
 
 	/**
 	 * Provides a Camera for easy scene displacement
@@ -12,6 +12,8 @@
 	 */
 	function Camera() {
 	
+		this.extendsEventHandler();
+
 		/**
 		 * The x coordinate
 		 * @property x
@@ -26,6 +28,8 @@
 		 * @type float
 		 */
 		this._y = 0;
+		this._prevX = 0;
+		this._prevY = 0;
 		/**
 		 * Represents the width of the viewable area
 		 * @property viewportWidth
@@ -52,7 +56,18 @@
 		 * @private 
 		 */
 		this._halfViewportWidth = 0;
+		
+		this._boundingArea = null;
+		
 	}
+	Camera.prototype.setBoundingArea = function(left, top, right, bottom) {
+		this._boundingArea = {
+			minX: left,
+			minY: top,
+			maxX: right,
+			maxY: bottom
+		}
+	};
 	/**
 	 * Sets viewport width, hight and halfs sizes
 	 * @method setViewport
@@ -60,10 +75,13 @@
 	 * @param {int} height
 	 */
 	Camera.prototype.setViewport = function(width, height) {
+	
 		this.viewportWidth = width;
 		this.viewportHeight = height;
+		
 		this._halfViewportWidth = width / 2;
 		this._halfViewportHeight = height / 2;
+		
 	}
 	/**
 	 * Centers the camera at the given Renderizable
@@ -71,8 +89,7 @@
 	 * @param {renderers.Renderizable} renderizable
 	 */
 	Camera.prototype.centerAtRenderizable = function(renderizable) {
-		this.x = renderizable._x - this._halfViewportWidth;
-		this.y = renderizable._y - this._halfViewportHeight;
+		this.centerAt(renderizable._x, renderizable._y);
 	};
 	/**
 	 * Centers the camera at the given coordinates
@@ -81,19 +98,45 @@
 	 * @param {y} integer
 	 */
 	Camera.prototype.centerAt = function(x, y) {
-		this.x = x - this._halfViewportWidth;
-		this.y = y - this._halfViewportHeight;
-		M.redrawAllLayers();
+
+		x = x - this._halfViewportWidth;
+		y = y - this._halfViewportHeight;
+
+		if ( this._boundingArea ) {
+			if ( x < this._boundingArea.minX ) {
+				x = this._boundingArea.minX;
+			}
+			if ( y < this._boundingArea.minY ) {
+				y = this._boundingArea.minY;
+			}
+			if ( x > this._boundingArea.maxX ) {
+				x = this._boundingArea.maxX;
+			}
+			if ( y > this._boundingArea.maxY ) {
+				y = this._boundingArea.maxY;
+			}
+		}
+
+		this.setX(x);
+		this.setY(y);
+
 	};
 
 	Camera.prototype.setX = function(value) {
+		this._prevX = this._x;
 		this._x = value;
-		M.redrawAllLayers();
+		this.raiseEvent("locationChanged");
 	};
 
 	Camera.prototype.setY = function(value) {
+		this._prevY = this._y;
 		this._y = value;
-		M.redrawAllLayers();
+		this.raiseEvent("locationChanged");
+	};
+
+	Camera.prototype.reset = function() {
+		this.setX(0);
+		this.setY(0);
 	};
 
 	Camera.prototype.getX = function() {
@@ -113,11 +156,11 @@
 	};
 
 	Camera.prototype.getLeftFromLayer = function(layer) {
-		return this.x * layer.parrallaxFactor.x;
+		return this._x * layer.parrallaxFactor.x;
 	};
 
 	Camera.prototype.getTopFromLayer = function(layer) {
-		return this.y * layer.parrallaxFactor.y;
+		return this._y * layer.parrallaxFactor.y;
 	};
 
 	Camera.prototype.getBottomFromLayer = function(layer) {
@@ -127,7 +170,33 @@
 	Camera.prototype.getRightFromLayer = function(layer) {
 		return this.getLeftFromLayer(layer) + this.viewportWidth;
 	};
-	
-	M.onLoopProperties.camera = M.camera = new Camera();
+	/**
+	 * We use Square collision detection to determine if the
+	 * object is visible or not
+	 */
+	Camera.prototype.canSee = function(renderizable) {
+		
+		if ( renderizable._alpha == 0 || !renderizable._visible ) return false;
+		
+		var sizeObj = 0;
+		
+		if ( renderizable._halfWidth > renderizable._halfHeight ) {
+			sizeObj = renderizable._halfWidth;
+		} else {
+			sizeObj = renderizable._halfHeight;
+		}
 
-})(window.Match);
+		if ( this._y + this.viewportHeight < renderizable.getTop() ) return false;
+		if ( this._y - this.viewportHeight > renderizable.getBottom() ) return false;
+		if ( this._x + this.viewportWidth < renderizable.getLeft() ) return false;
+		if ( this._x - this.viewportWidth > renderizable.getRight() ) return false;
+		
+		return true;
+		
+	};
+	
+	M.extend(Camera, EventHandler);
+
+	M.Camera = Camera;
+
+})(Match, EventHandler);

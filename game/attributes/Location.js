@@ -1,0 +1,1 @@
+M.registerAttribute("location", M.math2d.Vector2d);

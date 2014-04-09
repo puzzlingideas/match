@@ -99,7 +99,7 @@ var M = window.M || {},
 		if ( a.canPlayType( "audio/wav" ) != "" ) return ".wav";
 		if ( a.canPlayType( "audio/mp4" ) != "" ) return ".mp4";
 
-		console.warn("This browser does not support audio");
+		this.logger.warn("This browser does not support audio");
 
 	};
 
@@ -180,6 +180,7 @@ var M = window.M || {},
 	 */
 	function Match() {
 		
+		this.logger = new DefaultLogger();
 		/**
 		 * Determines whether to loop though the onLoop list
 		 * @property _isPlaying
@@ -195,19 +196,26 @@ var M = window.M || {},
 		 * @private
 		 * @type Array
 		 */
-		this._gameLayers = [];
+		this._gameLayers = new EventSimpleMap();
 		/**
 		 * Array of GameObject. Match loops the objects in this array calling the onLoop method of each of them. This operation
-		 * involves does not involve rendering. Match loops this list first, updates every object and once that is finished it loops
+		 * does not involve rendering. Match loops this list first, updates every object and once that is finished it loops
 		 * the game layers
 		 * @property _gameObjects
 		 * @private
 		 * @type Array
 		 */
-		this._gameObjects = [];
+		this._gameObjects = new Array();
+		/**
+		 * Array of Triggers
+		 * @property _gameObjects
+		 * @private
+		 * @type Array
+		 */
+		this._triggers = new Array();
 		/**
 		 * Cache used for retrieving elements from onLoopList faster
-		 * @property offScreenContext
+		 * @property cache
 		 * @private
 		 * @type Object
 		 */
@@ -233,8 +241,10 @@ var M = window.M || {},
 			offScreenContext: this.offScreenContext,
 			offScreenCanvas: this.offScreenCanvas,
 			debug: false,
-			time: 0
+			time: 0,
+			m: this
 		};
+
 		/**
 		 * Object that contains information about the current browser
 		 * @property browser
@@ -271,11 +281,52 @@ var M = window.M || {},
 		 * @type EventListener
 		 */
 		this.onGameObjectRemoved = new EventListener();
+		/**
+		 * Array containing input handlers
+		 * @property _inputHandlers
+		 * @type Array
+		 * @private
+		 */
+		this._inputHandlers = [];
 		
-		this.setDoubleBuffer(false);
+		//Show logo and duration of animation
+		this.showLogo = true;
+		this.LOGO_DURATION = 2000;
+		
+		this.DEFAULT_LAYER_NAME = "world";
+		this.DEFAULT_LAYER_BACKGROUND = "#000";
+
+		this.DEFAULT_UPDATES_PER_SECOND = 60;
+		this._updatesPerSecond = 0;
+		this._msPerUpdate = 0;
+		this._previousLoopTime = null;
+		this._lag = 0;
+		this._maxLag = 50;
+		
+		this.setUpdatesPerSecond(this.DEFAULT_UPDATES_PER_SECOND);
 
 		this.plugins = {
 			html: {
+			}
+		};
+
+		this.version = "1.6a";
+		this.name = "Match";
+		this.company = "Puzzling Ideas";
+		
+		/**
+		 * Common game attributes and behaviours
+		 * @property game
+		 * @type Object
+		 */
+		this.game = {
+			behaviours: {
+			},
+			attributes: {
+			},
+			entities: {
+			},
+			scenes: {
 			}
 		};
 
@@ -288,141 +339,68 @@ var M = window.M || {},
 		});
 
 	}
+
+	Match.prototype.getCamera = function() {
+		return this.renderer.camera;
+	};
 	
-	Match.prototype.registerClass = function() {
+	Match.prototype.setUpdatesPerSecond = function(updates) {
+		this._updatesPerSecond = updates;
+		this._msPerUpdate = Math.floor(1000 / updates);
+	};
 	
-		var namespace = arguments[0].split("\."),
-			clousure = arguments[arguments.length - 1],
-			current = window,
-			l = namespace.length - 1,
-			dependencies = [],
-			name;
-		
-		for ( var i = 0; i < l; i++ ) {
-			name = namespace[i];
-			if ( !current[name] ) {
-				current[name] = new Object();
-			}
-			current = current[name];
-		}
-		
-		if ( ! current[namespace[l]] ) {
-		
-			//Adds the default namespace as a dependency so it is available as the first argument of the clousure
-			for ( var i = 1; i < arguments.length - 1; i++ ) {
-				dependencies.push(arguments[i]);
-			}
-			
-			current[namespace[l]] = clousure.apply(clousure, dependencies);
-			current[namespace[l]].namespace = arguments[0];
-		
-		}
-
-	};
-
-	/**
-	 * @deprecated
-	 */
-	Match.prototype.registerGameEntity = function() {
-		console.warn("Warning this method is deprecated and will not be available in future releases. Please use registerGameObject");
-		this.registerGameObject.apply(this, arguments);
-	};
-
-	Match.prototype.registerGameObject = function() {
-		// The current implementation may change to:
-		// arguments[0] = "M.game.objects" + arguments[0];
-		// arguments[0] = "M.game.classes" + arguments[0];
-		// registerGameClass;
-		console.warn("registerGameObject implementation is not final and may change");
-		arguments[0] = "game." + arguments[0];
-		this.registerClass.apply(this, arguments);
-	};
-
-	Match.prototype.registerPlugin = function() {
-		arguments[0] = "M.plugins." + arguments[0];
-		this.registerClass.apply(this, arguments);
-	};
-
-	Match.prototype.registerPluginTemplate = function(id, html) {
-		this.plugins.html[id] = html;
+	Match.prototype.getUpdatesPerSecond = function() {
+		return this._updatesPerSecond;
 	};
 	/**
-	 * Returns a game class or object based on the given name
-	 *
-	 * @method getGameObject
-	 * @param {String} className the name of the class or object to retrieve
-	 * @return {Object} the object registered by the given className
+	 * Returns the layer by the given name
+	 * @method getLayer
+	 * @param {String} name the name of the layer
 	 */
-	Match.prototype.getGameObject = function(className) {
-		console.warn("getGameObject implementation is not final and may change");
-		// The current implementation may change to:
-		// return this.game.objects[className];
-		return game[className];
+	Match.prototype.getLayer = function(name) {
+		return this._gameLayers.get(name);
 	};
 	/**
-	 * Instantiates a game object by the given className and calls the setters
-	 * on it provided in setAttributes
-	 *
-	 * NOTE: The class you are willing to instantiate must have a public and
-	 * non arguments constructor
-	 *
-	 * @method getGameClassInstance
-	 * @private
-	 *
-	 * @param {String} className
-	 * @param {Map} setAttributes
-	 * @return {Object} the instantiated game object
+	 * Returns the layer by the given name. Works exactly as getLayer
+	 * @method layer
+	 * @param {String} name the name of the layer
 	 */
-	Match.prototype._getClassInstance = function(className, setAttributes) {
-	
-		var path = className.split("."),
-			clazz = window,
-			instance,
-			i,
-			keyValuePair;
-		
-		for ( var i = 0; i < path.length; i++ ) {
-			clazz = clazz[path[i]];
-		}
-		
-		instance = new clazz();
-		
-		for ( i in setAttributes ) {
-			
-			keyValuePair = setAttributes[i];
-			
-			if ( instance[keyValuePair.key] ) {
-				if ( typeof instance[keyValuePair.key] == "function" ) {
-					instance[keyValuePair.key](keyValuePair.value);
-				} else {
-					instance[keyValuePair.key] = keyValuePair.value;
-				}
-			}
-			
-		}
-		
-		return instance;
-		
-	};
-
-	Match.prototype.getPluginTemplate = function(id) {
-		var div = document.createElement("div");
-		div.setAttribute("id", id);
-		div.innerHTML = this.plugins.html[id];
-		return div;
-	};
-
+	Match.prototype.layer = Match.prototype.getLayer;
 	Match.prototype.setUpGameLoop = function() {
 
 		this.gameLoopAlreadySetup = true;
+		
+		this._previousLoopTime = this.getTime();
+		this._lag = 0;
+
+		this.createGameLayer(this.DEFAULT_LAYER_NAME).background = this.DEFAULT_LAYER_BACKGROUND;
 
 		gameLoop();
 		/*
 		 * If there is a main function defined in window, it is called
 		 */
 		if ( typeof window.main == "function" ) {
-			window.main();
+			this.start();
+			if ( this.showLogo ) {
+				this._showLogo();
+			} else {
+				window.main();
+			}
 		}
+
+	};
+	Match.prototype._showLogo = function() {
+
+		this.setScene("matchLogo", function() {
+
+			setTimeout(function() {
+				M.removeScene();
+				if ( window.main ) {
+					window.main();
+				}
+			}, M.LOGO_DURATION);
+			
+		})
 
 	};
 	/**
@@ -475,85 +453,99 @@ var M = window.M || {},
 		this.onLoopProperties.orientation = orientation;
 		this._buildInputMapping();
 	};
-	/**
-	 * Renders the contents of the layers to the game canvas without using a middle buffer. This may result in flickering
-	 * in some systems and does not allow applying properties to layers
-	 * @method renderSingleBuffer
-	 * @param {Array} list array of game layers
-	 * @param {CanvasRenderingContext2D} fronCanvas the canvas attached to the document where the game takes place
-	 * @param {OnLoopProperties} p useful objects for performance increase
-	 */
-	Match.prototype.renderSingleBuffer = function(list, frontCanvas, p) {
-
-		/**
-		 * Cache variables that are used in this function
-		 */
-		var l = list.length,
-			i = 0,
-			f = this.frontBuffer;
-
-		f.clearRect(0, 0, frontCanvas.width, frontCanvas.height);
-
-		for ( ; i < l; i++ ) {
-			f.drawImage( list[i].onLoop(p), 0, 0 );
+	Match.prototype.registerClass = function() {
+	
+		var namespace = arguments[0].split("\."),
+			clousure = arguments[arguments.length - 1],
+			current = window,
+			l = namespace.length - 1,
+			dependencies = [],
+			name;
+		
+		for ( var i = 0; i < l; i++ ) {
+			name = namespace[i];
+			if ( !current[name] ) {
+				current[name] = new Object();
+			}
+			current = current[name];
+		}
+		
+		if ( ! current[namespace[l]] ) {
+		
+			//Adds the default namespace as a dependency so it is available as the first argument of the clousure
+			// dependencies.push(current);
+			
+			for ( var i = 1; i < arguments.length - 1; i++ ) {
+				dependencies.push(arguments[i]);
+			}
+			
+			current[namespace[l]] = clousure.apply(clousure, dependencies);
+			current[namespace[l]].namespace = arguments[0];
+		
 		}
 
 	};
-	/**
-	 * Renders the contents of the layers to the game canvas using a middle buffer to avoid flickering. Enables the use of layer properties
-	 * @method renderDoubleBuffer
-	 * @param {Array} list array of game layers
-	 * @param {CanvasRenderingContext2D} fronCanvas the canvas attached to the document where the game takes place
-	 * @param {OnLoopProperties} p useful objects for performance increase
-	 */
-	Match.prototype.renderDoubleBuffer = function(list, frontCanvas, p) {
 
-		/*
-		 * Cache variables that are used in this function
-		 */
-		var l = list.length,
-			i = 0,
-			currentLayer,
-			backBuffer = this.backBuffer;
+	Match.prototype.registerPlugin = function() {
+		arguments[0] = "M.plugins." + arguments[0];
+		this.registerClass.apply(this, arguments);
+	};
+	Match.prototype.registerPluginTemplate = function(id, html) {
+		this.plugins.html[id] = html;
+	};	
+	Match.prototype.getPluginTemplate = function(id) {
+		var div = document.createElement("div");
+		div.setAttribute("class", "match plugin " + id);
+		div.innerHTML = this.plugins.html[id];
+		return div;
+	};
+	Match.prototype.addPlugin = function(id) {
+		document.getElementById("match-plugins").appendChild(this.getPluginTemplate(id));
+	};	
+	Match.prototype.removePlugin = function(id) {
+		document.getElementById("#match-plugins").removeChild(document.getElementById(id));
+	};
 
-		backBuffer.clearRect(0, 0, frontCanvas.width, frontCanvas.height);
+	Match.prototype.registerBehaviour = function(name, value, requires, description) {
 
-		for ( ; i < l; i++ ) {
-
-			currentLayer = list[i];
-
-			var result = currentLayer.onLoop(p);
-
-			backBuffer.save();
-
-			if ( currentLayer.composite ) {
-				backBuffer.globalCompositeOperation = currentLayer.composite;
-			}
-
-			if ( currentLayer._alpha != null && currentLayer._alpha >= 0 && currentLayer._alpha <= 1 ) {
-				backBuffer.globalAlpha = currentLayer._alpha;
-			}
-
-			backBuffer.translate(backBuffer.halfWidth, backBuffer.halfHeight);
-
-			if ( currentLayer.rotation ) {
-				backBuffer.rotate(currentLayer.rotation);
-			}
-
-			if ( currentLayer.scale ) {
-				backBuffer.scale(currentLayer.scale.x, currentLayer.scale.y);
-			}
-
-			backBuffer.drawImage( result, -backBuffer.halfWidth, -backBuffer.halfHeight);
-
-			backBuffer.restore();
-
+		if ( this.game.behaviours[name] == undefined ) {
+			this.game.behaviours[name] = value;
+		} else {
+			this.logger.warn("There is already a behaviour named ", name);
 		}
 
-		this.frontBuffer.clearRect(0, 0, frontCanvas.width, frontCanvas.height);
-
-		this.frontBuffer.drawImage( backBuffer.canvas, 0, 0 );
-
+	};
+	Match.prototype.registerAttribute = function(name, value) {
+		if ( this.game.attributes[name] == undefined ) {
+			this.game.attributes[name] = value;
+		} else {
+			this.logger.warn("There is already an attribute named ", name);
+		}
+	};
+	Match.prototype.registerEntity = function(name, value) {
+		if ( this.game.entities[name] == undefined ) {
+			this.game.entities[name] = value;
+		} else {
+			this.logger.warn("There is already an entity named ", name);
+		}
+	};
+	Match.prototype.createEntity = function(name) {
+		var entity = this.game.entities[name]();
+		entity.name = name;
+		return entity;
+	};	
+	Match.prototype.registerScene = function(name, value) {
+		if ( this.game.scenes[name] == undefined ) {
+			this.game.scenes[name] = value;
+		} else {
+			this.logger.warn("There is already a scenes named ", name);
+		}
+	};
+	Match.prototype.unregisterScene = function(name) {
+		this.game.scenes[name] = null;
+	};
+	Match.prototype.getScene = function(name) {
+		return this.game.scenes[name];
 	};
 	/**
 	 * Calls the onLoop method on all elements in nodes
@@ -567,50 +559,55 @@ var M = window.M || {},
 
 			var node = nodes[i];
 
-			if ( this._applyInput ) {
-				this._applyInput(p, node);
-			}
+			this._applyInput(node);
 
-			if (node.onLoop) {
-				node.onLoop(p);
-			}
-
-			if ( node.children ) {
-				this.updateGameObjects(node.children, p);
-			}
+			node.onLoop(p);
 
 		}
 
 	};
+	/**
+	 * Calls applyToObject to of each input handler
+	 * @method _applyInput
+	 * @param {Node} node to apply input handling to
+	 */
+	Match.prototype._applyInput = function(node) {
+		var i = 0,
+			l = this._inputHandlers.length;
+		for ( ; i < l; i++ ) {
+			this._inputHandlers[i].applyToObject(node);
+		}
+	};
+	/**
+	 * Updates all input handlers
+	 * @method _updateInput
+	 */
+	Match.prototype._updateInput = function() {
+		var i = 0,
+			l = this._inputHandlers.length;
+		for ( ; i < l; i++ ) {
+			this._inputHandlers[i].update();
+		}
+	};
 	Match.prototype._buildInputMapping = function() {
 
-		var p = this.onLoopProperties,
-			applyInput = "",
-			updateInput = "";
+		var p = this.onLoopProperties;
 
 		if ( p.keyboard ) {
-			applyInput += "p.keyboard.applyToObject(node);";
-			updateInput += "p.keyboard.update();";
+			this._inputHandlers.push(p.keyboard);
 		}
 		if ( p.mouse ) {
-			applyInput += "p.mouse.applyToObject(node);";
-			updateInput += "p.mouse.update();";
+			this._inputHandlers.push(p.mouse);
 		}
 		if ( p.touch ) {
-			applyInput += "p.touch.applyToObject(node);";
-			updateInput += "p.touch.update();";
+			this._inputHandlers.push(p.touch);
 		}
 		if ( p.accelerometer ) {
-			applyInput += "p.accelerometer.applyToObject(node);";
-			updateInput += "p.accelerometer.update();";
+			this._inputHandlers.push(p.accelerometer);
 		}
 		if ( p.orientation ) {
-			applyInput += "p.orientation.applyToObject(node);";
-			updateInput += "p.orientation.update();";
+			this._inputHandlers.push(p.orientation);
 		}
-
-		this._applyInput = new Function("p", "node", applyInput);
-		this._updateInput = new Function("p", updateInput);
 
 	};
 	/**
@@ -620,23 +617,40 @@ var M = window.M || {},
 	Match.prototype.gameLoop = function() {
 
 		if ( !this._isPlaying ) return;
-
+		
 		this.onBeforeLoop.raise();
 
-		var p = this.onLoopProperties;
+		var p = this.onLoopProperties,
+			current = this.getTime(),
+			renderer = this.renderer;
 
 		p.time = this.FpsCounter.timeInMillis;
-
-		this.updateGameObjects(this._gameObjects, p);
 		
-		this._updateInput(p);
+		this._lag += current - this._previousLoopTime;
+		this._previousLoopTime = current;
 
-		/*
-		 * Render using single buffer or double buffer
-		 * @see renderSingleBuffer
-		 * @see renderDoubleBuffer
-		 */
-		this.render(this._gameLayers, this.frontBuffer.canvas, p);
+		if ( this._lag > this._maxLag ) {
+			this._lag = this._maxLag;
+		}
+		
+		current = new Date().getTime();
+		
+		while ( this._lag > this._msPerUpdate ) {
+		
+			this._updateInput(p);
+			this.updateGameObjects(this._gameObjects, p);
+			this.updateTriggers(this._triggers);
+			this._lag -= this._msPerUpdate;
+
+		}
+
+		this.updateTime = new Date().getTime() - current;
+		
+		current = new Date().getTime();
+
+		this.renderer.renderLayers(this._gameLayers);
+		
+		this.renderTime = new Date().getTime() - current;
 
 		/*
 		 * Update FPS count
@@ -645,8 +659,12 @@ var M = window.M || {},
 
 		this.onAfterLoop.raise();
 
-		if ( this.mouse ) this.mouse.clear();
-
+	};
+	Match.prototype.updateTriggers = function(triggers) {
+		var i = 0, l = triggers.length;
+		for ( ;  i < l; i++ ) {
+			triggers[i].onLoop();
+		}
 	};
 	/**
 	 * Gets the result of all layers as an image in base64
@@ -654,7 +672,7 @@ var M = window.M || {},
 	 * @return {String} a string representing an image in base64
 	 */
 	Match.prototype.getAsBase64Image = function() {
-		return this.frontBuffer.canvas.toDataURL();
+		return this.renderer.getAsBase64Image();
 	};
 	/**
 	 * Gets the result of all layers as an html image
@@ -733,13 +751,71 @@ var M = window.M || {},
 	Match.prototype.isInOnLoopList = function(object) {
 		return this._gameObjects.indexOf(object) != -1;
 	};
-	Match.prototype.push = function(obj) {
-		if ( obj instanceof this.Layer ) {
-			this.pushLayer(obj);
-		} else {
-			this.pushObject(obj);
+	Match.prototype.add = function() {
+
+		for ( var i = 0; i < arguments.length; i++ ) {
+			this.pushGameObject(arguments[i]);
 		}
+	
+		return {
+		
+			objects: arguments,
+			
+			to: function(layerName) {
+			
+				if ( !layerName ) {
+					return;
+				}
+			
+				var layer = M.layer(layerName);
+				
+				if ( !layer ) {
+					layer = M.createGameLayer(layerName);
+				}
+				
+				if ( layer ) {
+					for ( var i = 0; i < this.objects.length; i++ ) {
+						M.getLayer(layerName).add(this.objects[i]);
+					}
+				}
+				
+			}
+		}
+		
 	};
+	Match.prototype.remove = function() {
+
+		for ( var i = 0; i < arguments.length; i++ ) {
+			this.removeGameObject(arguments[i]);
+		}
+	
+		return {
+		
+			objects: arguments,
+			
+			from: function(layerName) {
+			
+				if ( !layerName ) {
+					return;
+				}
+			
+				var layer = M.layer(layerName);
+				
+				if ( !layer ) {
+					layer = M.createGameLayer(layerName);
+				}
+				
+				if ( layer ) {
+					for ( var i = 0; i < this.objects.length; i++ ) {
+						M.getLayer(layerName).remove(this.objects[i]);
+					}
+				}
+				
+			}
+		}
+
+	};
+	Match.prototype.push = Match.prototype.add;	
 	/**
 	 * Pushes a game object, that is an object that implements an onLoop method, to the game object list.
 	 * NOTE: If the object does not implement onLoop then this method will throw an Error
@@ -747,9 +823,17 @@ var M = window.M || {},
 	 * @param {GameObject} gameObject the object to push to the game object list
 	 */
 	Match.prototype.pushGameObject = function(gameObject) {
+		
 		if ( !gameObject.onLoop ) throw new Error("Cannot add object " + gameObject.constructor.name + ", it doesn't have an onLoop method");
-		this._gameObjects.push(gameObject);
+		
+		if ( gameObject instanceof this.Entity ) {
+			this._gameObjects.push(gameObject);
+		} else {
+			this._triggers.push(gameObject);
+		}
+
 		this.onGameObjectPushed.raise();
+
 	};
 	/**
 	 * Shortcut to pushGameObject
@@ -800,136 +884,6 @@ var M = window.M || {},
 		this._gameObjects = new Array();
 	};
 	/**
-	 * Creates a new canvas rendering context
-	 *
-	 * NOTE: Using this method may result in some objects not to be updated or rendered and bliking. Please call the remove method from match
-	 *
-	 * @method createNewContext
-	 * @return {CanvasRenderingContext2D} the new context
-	 */
-	Match.prototype.createNewContext = function() {
-		return window.document.createElement("canvas").getContext("2d");
-	};
-	/**
-	 * Sets double buffering on or off
-	 *
-	 * NOTE: Double buffering enables the use of layer properties such as alpha or rotation
-	 *
-	 * @method setDoubleBuffer
-	 * @param {Boolean} value the value that determines whether to use double buffer or not
-	 */
-	Match.prototype.setDoubleBuffer = function(value) {
-		if ( value ) {
-			this.backBuffer = this.createNewContext();
-			this.updateBufferSize();
-			this.render = this.renderDoubleBuffer;
-		} else {
-			this.render = this.renderSingleBuffer;
-		}
-	};
-	/**
-	 * Returns whether double buffering is enabled or not
-	 *
-	 * @method isDoubleBuffered
-	 * @return {Boolean} true if double buffering is enabled false if not
-	 */
-	Match.prototype.isDoubleBuffered = function() {
-		return this.render == this.renderDoubleBuffer;
-	};
-	/**
-	 * Sets the size of the current canvas
-	 *
-	 * @method setCanvasSize
-	 * @param {float} w width
-	 * @param {float} h height
-	 */
-	Match.prototype.setCanvasSize = function(w, h) {
-		if ( this.frontBuffer ) {
-			this.frontBuffer.canvas.width = w;
-			this.frontBuffer.canvas.height = h;
-			this.updateBufferSize();
-		}
-	};
-	/**
-	 * Stretches the contents of the canvas to the size of the html document.
-	 * This works as forcing a fullscreen, if the navigation bars of the browser were hidden.
-	 *
-	 * NOTE: This method behaves exactly as setCanvasStretchTo using document client width and height
-	 *
-	 * @method setCanvasStretch
-	 * @param {Boolean} value true to stretch, false to set default values
-	 */
-	Match.prototype.setCanvasStretch = function(value) {
-		if ( value ) {
-			this.setCanvasStretchTo(document.documentElement.clientWidth, document.documentElement.clientHeight);
-		} else {
-			this.setCanvasStretchTo("auto", "auto");
-		}
-	};
-	/**
-	 * Stretches the contents of the canvas to the size of the html document.
-	 *
-	 * @method setCanvasStretchTo
-	 * @param {String} w width in coordinates, as css pixels or percentages
-	 * @param {String} h height in coordinates, as css pixels or percentages
-	 */
-	Match.prototype.setCanvasStretchTo = function(w, h) {
-		if ( this.frontBuffer ) {
-			if ( w ) {
-				if ( typeof w == "number" || ( w != "auto" && w.indexOf("px") == "-1" && w.indexOf("%") == "-1" ) ) {
-					w = w + "px";
-				}
-				this.frontBuffer.canvas.style.width = w;
-			}
-
-			if ( h ) {
-				if ( typeof h == "number" || ( h != "auto" && h.indexOf("px") == "-1" && h.indexOf("%") == "-1" ) ) {
-					h = h + "px";
-				}
-				this.frontBuffer.canvas.style.height = h;
-			}
-		}
-	};
-	/**
-	 * Updates the back buffer size to match the size of the game canvas
-	 *
-	 * @method updateBufferSize
-	 */
-	Match.prototype.updateBufferSize = function() {
-
-		if ( this.frontBuffer ) {
-
-			if ( this.backBuffer && this.frontBuffer ) {
-				this.backBuffer.canvas.width = this.frontBuffer.canvas.width;
-				this.backBuffer.canvas.height = this.frontBuffer.canvas.height;
-				this.backBuffer.halfWidth = this.backBuffer.canvas.width / 2;
-				this.backBuffer.halfHeight = this.backBuffer.canvas.height / 2;
-			}
-
-			this.offScreenCanvas.width = this.frontBuffer.canvas.width;
-			this.offScreenCanvas.height = this.frontBuffer.canvas.height;
-
-			if ( this.collisions.PixelPerfect ) {
-				this.collisions.PixelPerfect.testContext.canvas.width = this.offScreenCanvas.width;
-				this.collisions.PixelPerfect.testContext.canvas.height = this.offScreenCanvas.height;
-			}
-
-			this.updateLayersSize();
-
-			this.updateViewport();
-		}
-	};
-	/**
-	 * Updates the size of all layers
-	 *
-	 * @method updateLayersSize
-	 */
-	Match.prototype.updateLayersSize = function() {
-		for ( var i = 0; i < this._gameLayers.length; i++ ) {
-			this._gameLayers[i].setSize(this.frontBuffer.canvas.width, this.frontBuffer.canvas.height);
-		}
-	};
-	/**
 	 * Creates a new game layer, adds it to the game layer list and returns it
 	 *
 	 * @method createGameLayer
@@ -938,25 +892,12 @@ var M = window.M || {},
 	 * @return {GameLayer} the newly created layer
 	 */
 	Match.prototype.createGameLayer = function(name, zIndex) {
+		if ( !name ) {
+			throw new Error("Cannot create layer. You must name it.");
+		}
 		var gameLayer = new this.GameLayer(name, zIndex || M._gameLayers.length);
-		if ( this.frontBuffer ) {
-			gameLayer.setBufferSize(this.frontBuffer.canvas);
-		}
-		this.pushGameLayer(gameLayer)
+		this.pushGameLayer(name, gameLayer);
 		return gameLayer;
-	};
-	/**
-	 * Forces all layers to redraw it's content
-	 *
-	 * @method createGameLayer
-	 * @param name name of the layer
-	 * @param zIndex z-index of the layer
-	 * @return {GameLayer} the newly created layer
-	 */
-	Match.prototype.redrawAllLayers = function() {
-		for ( var i = 0; i < this._gameLayers.length; i++ ) {
-			this._gameLayers[i].needsRedraw = true;
-		}
 	};
 	/**
 	 * Shortcut to createGameLayer
@@ -972,25 +913,17 @@ var M = window.M || {},
 			var layer = new M.GameLayer();
 			M.pushGameLayer(layer);
 	 */
-	Match.prototype.pushGameLayer = function(gameLayer) {
+	Match.prototype.pushGameLayer = function(name, gameLayer) {
 		if ( !gameLayer ) {
 			throw new Error("Cannot add null game layer");
 		}
-		if ( this.frontBuffer ) {
-			gameLayer.setBufferSize(this.frontBuffer.canvas);
-		}
-		// if ( this._intro._isPlaying ) {
-			// this._intro._layers.push(gameLayer);
-		// } else {
-			this._gameLayers.push(gameLayer);
-		// }
+		this._gameLayers.set(name, gameLayer);
 	};
 	/**
 	 * Shortcut to pushGameLayer
 	 * @method createGameLayer
 	 */
 	Match.prototype.pushLayer = Match.prototype.pushGameLayer;
-
 	/**
 	 * Sets the current scene
 	 * @method setScene
@@ -998,65 +931,155 @@ var M = window.M || {},
 	 * @param {Layer} a layer that will be shown when loading
 	 * @param {Function} transition the transition applied to the scene that is leaving and the one that is entering
 	 */
-	Match.prototype.setScene = function (scene, loadingLayer, transition) {
+	Match.prototype.setScene = function (name, callback) {
 
-		var m = this;
+		var scene = this.getScene(name);
 
-		this.removeAllGameLayers();
-		
-		if (loadingLayer ) {
-			this.pushLayer(loadingLayer);
+		if ( scene ) {
+			this.logger.log("Loading scene by name '", name, "'");
+		} else {
+			this.logger.error("Unable to load scene by name '", name, "'");
+			return;
 		}
 		
-		this.sprites.onAllImagesLoaded.removeAllEventListeners();
+		this.removeScene();
+		
+		if ( scene.loadingScene ) {
+		
+			var self = this;
 	
-		this.sprites.load(scene.resources.sprites, function () {
+			this.setScene(scene.loadingScene, function() {
 			
-			for ( var i in scene.layers ) {
+				var soundsReady = false,
+					spritesReady = false,
+					loadingScene = self.getScene(scene.loadingScene),
+					loadingFinished = false,
+					checkLoading = function() {
+						if ( !loadingFinished && soundsReady && spritesReady ) {
+							self.sprites.removeAllEventListeners();
+							self.sounds.removeAllEventListeners();
+							self.removeAllGameLayers();
+							for ( var i in loadingScene.sprites ) {
+								if ( scene.sprites[i] == undefined ) {
+									self.sprites.remove(i);
+								}
+							}
+							for ( var i in loadingScene.sounds ) {
+								if ( scene.sounds[i] == undefined ) {
+									self.sounds.remove(i);
+								}
+							}
+							scene.onLoad();
+							loadingFinished = true;
+						}
+					};
+					
+				if ( scene.sounds ) {
+					self.sounds.load(scene.sounds, function() {
+						soundsReady = true;
+						checkLoading();
+					});
+				} else {
+					soundsReady = true;
+				}
+
+				if ( scene.sprites ) {
+					self.sprites.load(scene.sprites, function() {
+						spritesReady = true;
+						checkLoading();
+					});
+				} else {
+					spritesReady = true;
+				}
+				
+				checkLoading();
+				
+			});
 			
-				var layer = new m.Layer,
-					layerData = scene.layers[i];
-				
-				for ( var j in layerData ) {
-				
-					var object = layerData[j],
-						instance = m._getClassInstance(object.className, object.setAttributes);
-						
-					if ( object.beforePush ) {
-						object.beforePush(instance);
+		} else {
+
+			// var m = this;
+
+			var soundsReady = false,
+				spritesReady = false,
+				loadingFinished = false,
+				checkLoading = function() {
+					if ( !loadingFinished && soundsReady && spritesReady ) {
+						loadingFinished = true;
+						scene.onLoad();
+						if ( callback ) {
+							callback();
+						}
 					}
+				};
+
+			if ( scene.sounds ) {
+				this.sounds.load(scene.sounds, function () {
+					soundsReady = true;
+					checkLoading();
+				});
+			} else {
+				soundsReady = true;
+			}
+
+			if ( scene.sprites ) {
+
+				this.sprites.load(scene.sprites, function () {
 					
-					layer.push(instance);
+					//TODO: This is used for scenes that come with the objects and layers already defined
+					// for ( var i in scene.layers ) {
 					
-				}
-				
-				m.pushLayer(layer);
-				
+					// 	var layer = new m.Layer,
+					// 		layerData = scene.layers[i];
+						
+					// 	for ( var j in layerData ) {
+						
+					// 		var object = layerData[j],
+					// 			instance = m._getClassInstance(object.className, object.setAttributes);
+								
+					// 		if ( object.beforePush ) {
+					// 			object.beforePush(instance);
+					// 		}
+							
+					// 		layer.push(instance);
+							
+					// 	}
+						
+					// 	m.pushLayer(layer);
+						
+					// }
+					
+					// for ( var i in scene.objects ) {
+					// 	var object = scene.objects[i],
+					// 		instance = m._getClassInstance(object.className, object.setAttributes);
+					// 	if ( object.beforePush ) {
+					// 		object.beforePush(instance);
+					// 	}
+					// 	m.pushGameObject(instance);
+					// }
+
+					spritesReady = true;
+					checkLoading();
+
+				});
+			} else {
+				spritesReady = true;
 			}
-			
-			for ( var i in scene.objects ) {
-				var object = scene.objects[i],
-					instance = m._getClassInstance(object.className, object.setAttributes);
-				if ( object.beforePush ) {
-					object.beforePush(instance);
-				}
-				m.pushGameObject(instance);
-			}
-			
-			if (loadingLayer ) {
-				m.removeLayer(loadingLayer);
-			}
-			
-		});
+
+			checkLoading();
+
+		}
 		
 	};
 	/**
 	 * TODO: Complete JS Doc
 	 */
 	Match.prototype.removeScene = function() {
-		var layers = this._gameLayers;
+		this.removeAllGameObjects();
 		this.removeAllGameLayers();
-		return layers;
+		this.sprites.removeAllEventListeners();
+		this.sounds.removeAllEventListeners();
+		this.createGameLayer(this.DEFAULT_LAYER_NAME).background = this.DEFAULT_LAYER_BACKGROUND;
 	};
 	/**
 	 * Pushes all provided layers into Match list of game layers
@@ -1081,14 +1104,28 @@ var M = window.M || {},
 	 * @method removeGameLayer
 	 * @param {GameLayer} gameLayer the layer remove from the list of layers
 	 */
-	Match.prototype.removeGameLayer = function(gameLayer) {
-		if ( !gameLayer && gameLayer !== 0 ) {
-			gameLayer = this._gameLayers[0];
+	Match.prototype.removeGameLayer = function(name) {
+		
+		var layer = this._gameLayers.get(name);
+
+		if ( layer ) {
+
+			for ( var i = 0; i < layer.onRenderList.length; i++ ) {
+				this.removeGameObject(layer.onRenderList[i]);
+			}
+
+			this._gameLayers.remove(name);
+
+			this.renderer._reRenderAllLayers = true;
+
+			return layer;
+
+		} else {
+		
+			this.logger.error("could not remove layer by name", name);
+		
 		}
-		this.removeElementFromArray( gameLayer, this._gameLayers );
-		for ( var i in gameLayer.onRenderList ) {
-			this.removeGameObject(gameLayer.onRenderList[i]);
-		}
+
 	};
 	/**
 	 * Shortcut to removeGameLayer
@@ -1102,13 +1139,10 @@ var M = window.M || {},
 	 * @method removeAllGameLayers
 	 */
 	Match.prototype.removeAllGameLayers = function() {
-		for ( var i = 0; i < this._gameLayers.length; i++ ) {
-			var gameLayer = this._gameLayers[i];
-			for ( var j in gameLayer.onRenderList ) {
-				this.removeGameObject(gameLayer.onRenderList[j]);
-			}
-		}
-		this._gameLayers = new Array();
+		var self = this;
+		this._gameLayers.eachKey(function(layer) {
+			self.removeGameLayer(layer);
+		});
 	};
 	/**
 	 * Returns a speed measured in pixels based on the average fps
@@ -1180,9 +1214,13 @@ var M = window.M || {},
 	 * @method sortLayers
 	 */
 	Match.prototype.sortLayers = function() {
-		this._gameLayers.sort(function(a, b) {
+		this._gameLayers._values.sort(function(a, b) {
 			return a._zIndex - b._zIndex;
 		});
+		this._gameLayers._keys = {};
+		for ( var i = 0; i < this._gameLayers._values.length; i++ ) {
+			this._gameLayers._keys[this._gameLayers._values[i].name] = i;
+		}
 	};
 	/**
 	 * Pauses or unpauses the game loop. Also raises the M.onPause or M.onUnPause event provided those are defined
@@ -1206,13 +1244,12 @@ var M = window.M || {},
 	 * call this method again unless you need to change the canvas
 	 *
 	 * @param {HTMLCanvasElement} canvas the canvas where to perform the rendering
-	 * @param {Boolean} doubleBuffer a boolean determinig whether to use double buffering or not
 	 * @method start
 	 * @example
 			//Use canvas by id gameCanvas and use double buffering
 			M.start(document.querySelector("#gameCanvas"), true);
 	 */
-	Match.prototype.start = function(canvas, doubleBuffer) {
+	Match.prototype.start = function(canvas, mode) {
 
 		if ( !canvas ) {
 			canvas = M.dom("canvas");
@@ -1228,16 +1265,10 @@ var M = window.M || {},
 								   canvas.mozRequestFullScreen || 
 								   canvas.msRequestFullScreen;
 
-		this.frontBuffer = canvas.getContext("2d");
+		canvas.setAttribute("data-engine", this.name);
+		canvas.setAttribute("data-version", this.version);
 
-		this.updateBufferSize();
-		this.updateViewport();
-
-		var i = 0, l = this._gameLayers.length;
-
-		for ( ; i < l; i++ ) {
-			this._gameLayers[i].setBufferSize(canvas);
-		}
+		this.renderer = this.renderingProvider.getRenderer(canvas, mode);
 
 		this._isPlaying = true;
 
@@ -1245,18 +1276,6 @@ var M = window.M || {},
 			this.setUpGameLoop();
 		}
 
-		// M._intro.play();
-
-	};
-	/**
-	 * Updates the camera viewport to match the size of the game canvas
-	 * @method updateViewport
-	 */
-	Match.prototype.updateViewport = function() {
-		this.camera.setViewport( this.frontBuffer.canvas.width, this.frontBuffer.canvas.height );
-	};
-	Match.prototype.getViewportSize = function() {
-		return { width: this.camera.viewportWidth, height: this.camera.viewportHeight };
 	};
 	/**
 	 * Removes the provided index from the given array
@@ -1438,17 +1457,7 @@ var M = window.M || {},
 	 * @param {Object} descendant object to put the methods from the parents prototype
 	 * @param {Object} parent where to take the methods to put in descendant
 	 */
-	Match.prototype.extend = function( descendant, parent ) {
-
-		for (var m in parent.prototype) {
-
-			if ( !descendant.prototype[m] ) {
-				descendant.prototype[m] = parent.prototype[m];
-			}
-
-		}
-
-	};
+	Match.prototype.extend = Class.extend;
 	/**
 	 * Rounds a number to the specified decimals
 	 * @method round
@@ -1463,6 +1472,9 @@ var M = window.M || {},
 		decimals = parseInt( a );
 		return Math.round( number * decimals ) / decimals;
 	};
+	Match.prototype.fastRoundTo = function( number, decimals ) {
+		return this.fastRound( number * decimals ) / decimals;
+	};
 	/**
 	 * Rounds a number down using the fastest round method in javascript.
 	 * @see http://jsperf.com/math-floor-vs-math-round-vs-parseint/33
@@ -1470,8 +1482,9 @@ var M = window.M || {},
 	 * @param {double} number the number to round
 	 * @return {int}
 	 */
-	Match.prototype.fastRound = function(number) {
-		return number >> 0;
+	Match.prototype.fastRound = function(n) {
+		// return number >> 0;
+		return (0.5 + n) << 0;
 	};
 	/**
 	 * Returns the a number indicating what percentage represents the given arguments
@@ -1526,18 +1539,8 @@ var M = window.M || {},
 			this.frontBuffer.canvas.requestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
 		}
 	};
-	Match.prototype.getSceneCenter = function() {
-		if ( this.frontBuffer ) {
-			return this.frontBuffer.canvas.getCenter();
-		} else {
-			return {
-				x: 0, y: 0
-			}
-		}
-	};
-	Match.prototype.setLoadingScene = function(scene) {
-		this.prevLayers = M.removeScene();
-		this.pushScene(scene.getLayers());
+	Match.prototype.getCenter = function() {
+		return this.renderer.getCenter();
 	};
 	Match.prototype.getObjectName = function(object) {
 		if (!object || !object.constructor) {
@@ -1549,142 +1552,7 @@ var M = window.M || {},
 		}
 		return name;
 	};
-
-	/* Save console usage for debugging purposes */
-	if ( window.console ) {
-
-		if ( window.console.log ) {
-			window.console.debug = window.console.log;
-		}
-		if ( ! window.console.warn ) {
-			window.console.warn = window.console.debug;
-		}
-
-	} else {
-
-		window.console = {};
-		window.console.log = window.console.debug = window.console.error = window.console.warning = function() {};
-
-	}
-
-	/* Enhance dom elements */
-	HTMLElement.prototype.remove = function() {
-		this.parentNode.removeChild(this);
-	};
-
-	HTMLElement.prototype.setClass = function(cssClass) {
-		this.setAttribute("class", cssClass);
-	};
 	
-	HTMLCanvasElement.prototype.getCenter = function() {
-		return {x: this.width / 2, y: this.height / 2};
-	};
-
-	HTMLCanvasElement.prototype.setSize = function( width, height ) {
-		this.width = width;
-		this.height = height;
-	};
-
-	HTMLCanvasElement.prototype.adjustTo = function( width, height ) {
-		this.style.setProperty("width", width + "px", null);
-		this.style.setProperty("height", height + "px", null);
-	};
-
-	HTMLCanvasElement.prototype.adjustToAvailSize = function() {
-		this.adjustTo( window.screen.availWidth + "px", window.screen.availHeight + "px" );
-	};
-
-	HTMLCanvasElement.prototype.resizeKeepingAspect = function( times ) {
-		this.adjustTo( this.width * times, this.height * times );
-	};
-
-	HTMLCanvasElement.prototype.getRight = function() {
-		return this.offsetLeft + this.offsetWidth;
-	};
-
-	HTMLCanvasElement.prototype.getBottom = function() {
-		return this.offsetTop + this.offsetHeight;
-	};
-
-	HTMLCanvasElement.prototype.getAvailWidth = function() {
-		if ( this.getRight() < window.screen.availWidth ) { 
-			return this.offsetWidth;
-		} else {
-			return window.screen.availWidth - this.offsetLeft;
-		}
-	};
-
-	HTMLCanvasElement.prototype.getAvailHeight = function() {
-		if ( this.getBottom() < window.screen.availHeight ) { 
-			return this.offsetHeight;
-		} else {
-			return window.screen.availHeight - this.offsetTop;
-		}
-	};
-
-	HTMLCanvasElement.prototype.getViewport = function() {
-		var viewport = {};
-		if ( this.offsetLeft < 0 ) {
-			viewport.left = -this.offsetLeft;
-		} else {
-			viewport.left = 0;
-		}
-		if ( this.offsetTop < 0 ) {
-			viewport.top = -this.offsetTop;
-		} else {
-			viewport.top = 0;
-		}
-		if ( this.offsetLeft + this.offsetWidth > window.screen.availWidth ) {
-			viewport.right = window.screen.availWidth - this.offsetLeft;
-		} else {
-			viewport.right = this.offsetWidth;
-		}
-		if ( this.offsetTop + this.offsetHeight > window.screen.availHeight ) {
-			viewport.bottom = window.screen.availHeight - this.offsetTop;
-		} else {
-			viewport.bottom = this.offsetHeight;
-		}
-		return viewport;
-	};
-
-	HTMLCanvasElement.prototype.getAspect = function() {
-		var aspect = { x: 1, y: 1 };
-		if ( this.style.width && this.width != parseInt(this.style.width) ) {
-			aspect.x = this.width / parseInt(this.style.width);
-		}
-		if ( this.style.height && this.height != parseInt(this.style.height) ) {
-			aspect.y = this.height / parseInt(this.style.height);
-		}
-		return aspect;
-	};
-
-	CanvasRenderingContext2D.prototype.resetOperation = function() {
-		if ( this.operationChanged && this.globalCompositeOperation != "source-over" ) {
-			this.globalCompositeOperation = "source-over";
-			this.operationChanged = false;
-		}
-	};
-	CanvasRenderingContext2D.prototype.resetAlpha = function() {
-		if ( this.alphaChanged && this.globalAlpha != 1 ) {
-			this.globalAlpha = 1;
-			this.alphaChanged = false;
-		}
-	};
-	CanvasRenderingContext2D.prototype.resetShadow = function() {
-		if ( this.shadowChanged ) {
-			if ( this.shadowBlur != 0 ) {
-				this.shadowBlur = 0;
-			}
-			if ( this.shadowOffsetX != 0 ) {
-				this.shadowOffsetX = 0;
-			}
-			if ( this.shadowOffsetY != 0 ) {
-				this.shadowOffsetY = 0;
-			}
-			this.shadowChanged = false;
-		}
-	};
-
 	if ( !window.requestAnimationFrame ) {
 
 		window.requestAnimationFrame = 
@@ -1716,8 +1584,8 @@ var M = window.M || {},
 	 * browser so we just check Match state to know whether to loop or not.
 	 */
 	function gameLoop() {
-		requestAnimationFrame( gameLoop );
 		M.gameLoop();
+		requestAnimationFrame(gameLoop);
 	}
 
 })(window);

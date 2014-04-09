@@ -15,34 +15,7 @@
 		 * @type Boolean
 		 */
 		this.hasFocus = false;
-		/**
-		 * Child objects of this node
-		 * @property children
-		 * @type Array
-		 */
-        this.children = [];
 	}
-	/**
-	 * Adds a child node to the object
-	 * @method pushChild
-	 * @param {Renderizable} child object to add
-	 * @example
-			this.healthBarId = this.pushChild(new HealthBar());
-	 */
-    GameObject.prototype.pushChild = function(child) {
-		child.ownerLayer = this.ownerLayer;
-		return this.children.push(child);
-	};
-	/**
-	 * Removes a child node from the object
-	 * @method removeChild
-	 * @param {Renderizable | Integer} child object or index to remove
-	 * @example
-			this.removeChild(this.healthBarId);
-	 */
-    GameObject.prototype.removeChild = function(child) {
-        M.removeElementFromArray(child, this.children);
-    };
 	/**
 	 * Abstract method that is called once per game loop.
 	 * Every object pushed into Match list or GameLayer
@@ -162,5 +135,7 @@
 	 * @protected
 	 * @param {input.Mouse} mouse the mouse object to provide further mouse information
 	 */
+
+	 GameObject.name = "GameObject";
 	
 })(window.M);

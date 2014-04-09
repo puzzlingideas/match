@@ -48,9 +48,10 @@
 	 */
 	EventListener.prototype.addEventListener = function(listener, owner) {
 		if ( owner ) {
-			listener = listener.bind(owner);
+			this.listeners.push(new ObjectListener(listener, owner));
+		} else {
+			this.listeners.push(new FunctionListener(listener));
 		}
-		this.listeners.push(listener);
 	};
 	/**
 	 * @method raise
@@ -62,19 +63,33 @@
 		
 		if ( l == 0 ) return;
 		
-		for ( var i = 0; i < l; i++ ) {
-			this.listeners[i](arguments);
+		for ( ; i < l; i++ ) {
+			this.listeners[i].run(arguments);
 		}
 		
 	};
 	/**
 	 * @method removeEventListener
 	 */
-	EventListener.prototype.removeEventListener = function(listener) {
-		var l = this.listeners.indexOf(listener);
-		if ( l > -1 ) {
-			this.listeners.splice(l, 1);
+	EventListener.prototype.removeEventListener = function(listener, owner) {
+		
+		var i = 0,
+			l = this.listeners.length,
+			currentListener;
+
+		for ( ; i < l; i++ ) {
+
+			currentListener = this.listeners[i];
+
+			if ( currentListener.callback == listener || (currentListener.callbackName == listener && owner == currentListener.object ) ) {
+
+				this.listeners.splice(i, 1);
+				return;
+
+			}
+
 		}
+
 	};
 	/**
 	 * @method removeAllEventListeners
@@ -82,11 +97,50 @@
 	 * @return {Array} Array containing the event listeners that are removed
 	 */
 	EventListener.prototype.removeAllEventListeners = function() {
-		var listeners = this.listeners;
 		this.listeners = new Array();
 		return listeners;
 	};
 
+	EventListener.name = "EventListener";
+
 	namespace.EventListener = EventListener;
+
+	/**
+	 * Wraps a function to use it as a listener
+	 * 
+	 * @class FunctionListener
+	 * @constructor
+	 * @param {Function} callback function to invoke
+	 */
+	function FunctionListener(callback) {
+		this.callback = callback;
+	}
+	/**
+	 * Invokes callback function
+	 * @method run
+	 */
+	FunctionListener.prototype.run = function(args) {
+		this.callback(args[0]);
+	};
+
+	/**
+	 * Wraps an object and the callback name
+	 * 
+	 * @class ObjectListener
+	 * @constructor
+	 * @param {String} callbackName name of the function to call
+	 * @param {Object} object object in which to invoke the callback
+	 */
+	function ObjectListener(callbackName, object) {
+		this.callbackName = callbackName;
+		this.object = object;
+	}
+	/**
+	 * Invokes callback function on object
+	 * @method run
+	 */
+	ObjectListener.prototype.run = function(args) {
+		this.object[this.callbackName](args[0]);
+	};
 
 })(window);

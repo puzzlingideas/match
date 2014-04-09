@@ -102,7 +102,24 @@
 	 * @return {Vector2d}
 	 */
 	Math2d.prototype.getRotatedVertex = function(vertex, rotation) {
-		return new Vector2d( vertex.x * this.math.cos(rotation) - vertex.y * this.math.sin(rotation), vertex.y * this.math.cos(rotation) + vertex.x * this.math.sin(rotation) );
+		return this.getRotatedVertexCoords(vertex.x, vertex.y, rotation);
+	};
+	Math2d.prototype.getRotatedVertexCoordsX = function(x, y, rotation) {
+		return x * this.math.cos(rotation) - y * this.math.sin(rotation);
+	};
+	Math2d.prototype.getRotatedVertexCoordsY = function(x, y, rotation) {
+		return y * this.math.cos(rotation) + x * this.math.sin(rotation);
+	};
+	/*
+	 * Returns the vector rotated
+	 * @method getRotatedVertexCoords
+	 * @param {float} x
+	 * @param {float} y
+	 * @param {float} rotation
+	 * @return {Vector2d}
+	 */
+	Math2d.prototype.getRotatedVertexCoords = function(x, y, rotation) {
+		return new Vector2d( this.getRotatedVertexCoordsX(x, y, rotation), this.getRotatedVertexCoordsY(x, y, rotation) );
 	};
    /**
 	* Returns the magnitude of a vector
@@ -279,11 +296,44 @@
 	* @private
 	*/
 	function Vector2d(x, y) {
-		this.x = x;
-		this.y = y;
+		this.x = x || 0;
+		this.y = y || 0;
+		this.prevX = 0;
+		this.prevY = 0;
 	}
+	Vector2d.prototype.offset = function(x, y) {
+		this.set(this.x + x, this.y + y);
+		return this;
+	};
+	Vector2d.prototype.set = function(x, y) {
+		this.setX(x);
+		this.setY(y);
+		return this;
+	};
+	Vector2d.prototype.reset = function() {
+		return this.set(0, 0);
+	};
+	Vector2d.prototype.setX = function(x) {
+		this.prevX = this.x;
+		this.x = x;
+		return this;
+	};
+	Vector2d.prototype.setY = function(y) {
+		this.prevY = this.y;
+		this.y = y;
+		return this;
+	};
+	Vector2d.prototype.rotate = function(rotation) {
+		this.setX(instance.getRotatedVertexCoordsX(this.x, this.y, rotation));
+		this.setY(instance.getRotatedVertexCoordsY(this.x, this.y, rotation));
+		return this;
+	};
 
-	namespace.math2d = namespace.Math2d = new Math2d();
+	M.Vector2d = Vector2d;
+	
+	var instance = new Math2d();
+
+	namespace.math2d = namespace.Math2d = instance;
 	namespace.math2d.Vector2d = Vector2d;
 	
 })(window.Match);
