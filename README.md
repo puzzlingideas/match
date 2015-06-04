@@ -3,7 +3,7 @@ Match
 
 ## What is Match
 
-Match is a fast and quick to develop game engine writtern entirely in Javascript.
+Match is a fast and quick way to develop game engine writtern entirely in Javascript.
 
 ## What we aim at
 
